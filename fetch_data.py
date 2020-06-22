@@ -17,16 +17,13 @@ def updatesql(sat):
     
     c = conn.cursor()
 
-    for i in [sat.name, sat.sat_num, sat.international_des, sat.epoch, sat.ballistic, sat.drag, sat.inclination, sat.ascending, sat.eccentricity, sat.perigree, sat.anomaly, sat.motion, sat.rev_num]:
-        print (i, type(i))
-
-    # exit()
-    sql_insert = "INSERT INTO latest_data (name, sat_num, international_des, epoch, ballistic, drag_term, inclination, ascending_node, eccentricity, perigree, anomaly, motion, rev_num) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    sql_insert = """INSERT INTO latest_data 
+                    (name, sat_num, international_des, epoch, ballistic, drag_term, inclination, ascending_node, eccentricity, perigree, anomaly, motion, rev_num, description) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """
     
-    vals = [sat.name, sat.sat_num, sat.international_des, sat.epoch, sat.ballistic, sat.drag, sat.inclination, sat.ascending, sat.eccentricity, sat.perigree, sat.anomaly, sat.motion, sat.rev_num]
+    vals = [sat.name, sat.sat_num, sat.international_des, sat.epoch, sat.ballistic, sat.drag, sat.inclination, sat.ascending, sat.eccentricity, sat.perigree, sat.anomaly, sat.motion, sat.rev_num, sat.description]
 
-    # vals = ["'sat1'", "'123'", "'as12'", "'323 4343:2323'", 0.002, 0.0004, 12.123, 41.123, 0.01, 123.123, 123.123, 123.123456, 12345]
-    
     c.execute(sql_insert, vals)
     conn.commit()
     conn.close()
@@ -34,8 +31,9 @@ def updatesql(sat):
     print("Updated")
 
 class Satellite:
-    def __init__(self, snum):
+    def __init__(self, snum, desc):
         self.sat_num = snum #satellite number
+        self.description = desc #description of satellite purpose/objective
         self.name = None  # common name of satellite
         self.international_des = None #international designator  (launch year, nth launch of year, object of launch) 
         self.epoch = None #epoch date and julian date fraction
@@ -75,14 +73,14 @@ def convert_drag(num):
         output *= -1
     return output
 
-def fetchall():
-    sat_id = 25544
+def fetchall(sat_id, desc):
+    
     url = f"https://data.ivanstanojevic.me/api/tle/{sat_id}"
     headers = {"user-agent": "Mozilla/5.0 (X11 Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36"}
     response = requests.get( url, headers=headers)
-    sat = Satellite(str(sat_id))
+    sat = Satellite(str(sat_id), desc)
     for line in (response.text.split(",")):
-        print (line)
+        # print (line)
         if line.split(":")[0] == '"name"':
             sat.name = line.split(":")[1]
         elif line.split(":")[0] == '"line1"': 
@@ -133,12 +131,20 @@ def fetchall():
 
     updatesql(sat)
 
+def sat_fetch():
+    
+    sat_dict = pd.read_csv("./satellites.csv")
+
+    for s in range(len(sat_dict)):
+        fetchall(sat_dict["sat_num"][s], sat_dict["description"][s])
+
 # def check():
 #     db = sqlite3.connect('aircraft.db')
 #     table = pd.read_sql_query("select * from live", db)
 #     table.to_csv("live.csv")
     
 if __name__ == "__main__":
-    fetchall()
+    sat_fetch()
+    # fetchall()
     # check()
     
