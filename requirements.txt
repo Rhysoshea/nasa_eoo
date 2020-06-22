@@ -3,3 +3,4 @@ pandas
 numpy
 mysqlclient
 requests
+sgp4
