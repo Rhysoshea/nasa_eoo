@@ -13,10 +13,14 @@ PI = math.pi
 
 host, user, password, db = sql_credentials
 
+SAT_NUM = 25544 # satellite number to search
 
 class Satellite:
 
-    def __init__(self, n, e):
+    def __init__(self, name, inclination, e, perigee, n):
+        self.name = name # name of satellite
+        self.inclination = inclination # inclination of orbit from equator
+        self.perigee = perigee # argument of perigee (angle)
         self.n = n # mean motion (revolutions per day)
         self.e = e # eccentricity
         self.a = None # semi major axis length
@@ -64,22 +68,17 @@ def fetch_sql(sat_num):
 
     vals = [sat_num]
 
-    response = c.execute(sql_fetch, vals)
+    c.execute(sql_fetch, vals)
+    
+    response = list(c.fetchall()[0])
     conn.commit()
     conn.close()
 
     print (response)
 
-
-
-n = 15.49453790
-e = 0.0002606
-
-sat = Satellite(n, e)
-sat.__print__()
+    return response
 
 if __name__ == "__main__":
     
-    sat_num = 25544
-    n, e = fetch_sql(sat_num)
-    # sat = Satellite(n, e)
+    name, inclination, e, perigee, n =  fetch_sql(SAT_NUM)
+    sat = Satellite(name, inclination, e, perigee, n)
