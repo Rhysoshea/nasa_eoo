@@ -8,6 +8,9 @@ from sql_info import sql_credentials
 
 host, user, password, db = sql_credentials
 
+SAT_DICT = pd.read_csv("./satellites.csv")
+
+
 def updatesql(sat):
 
     conn = sql.connect(host = host,
@@ -18,7 +21,7 @@ def updatesql(sat):
     c = conn.cursor()
 
     sql_insert = """INSERT INTO latest_data 
-                    (name, sat_num, international_des, epoch, ballistic, drag_term, inclination, ascending_node, eccentricity, perigee, anomaly, motion, rev_num, description) 
+                    (name, sat_num, international_des, epoch, ballistic, drag_term, inclination, ascending_node, eccentricity, perigree, anomaly, motion, rev_num, description) 
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """
     
@@ -57,7 +60,7 @@ class Satellite:
         print (f"Inclination: {self.inclination}")
         print (f"Ascending: {self.ascending}")
         print (f"Eccentricity: {self.eccentricity}")
-        print (f"perigee: {self.perigee}")
+        print (f"Perigee: {self.perigee}")
         print (f"Anomaly: {self.anomaly}")
         print (f"Motion: {self.motion}")
         print (f"Revolutions: {self.rev_num}")
@@ -114,10 +117,8 @@ def fetchall(sat_num, desc):
 
 def sat_fetch():
     
-    sat_dict = pd.read_csv("./satellites.csv")
-
-    for s in range(len(sat_dict)):
-        sat = fetchall(sat_dict["sat_num"][s], sat_dict["description"][s])
+    for s in range(len(SAT_DICT)):
+        sat = fetchall(SAT_DICT["sat_num"][s], SAT_DICT["description"][s])
         updatesql(sat)
     
 if __name__ == "__main__":
