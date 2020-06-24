@@ -18,11 +18,11 @@ def updatesql(sat):
     c = conn.cursor()
 
     sql_insert = """INSERT INTO latest_data 
-                    (name, sat_num, international_des, epoch, ballistic, drag_term, inclination, ascending_node, eccentricity, perigree, anomaly, motion, rev_num, description) 
+                    (name, sat_num, international_des, epoch, ballistic, drag_term, inclination, ascending_node, eccentricity, perigee, anomaly, motion, rev_num, description) 
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """
     
-    vals = [sat.name, sat.sat_num, sat.international_des, sat.epoch, sat.ballistic, sat.drag, sat.inclination, sat.ascending, sat.eccentricity, sat.perigree, sat.anomaly, sat.motion, sat.rev_num, sat.description]
+    vals = [sat.name, sat.sat_num, sat.international_des, sat.epoch, sat.ballistic, sat.drag, sat.inclination, sat.ascending, sat.eccentricity, sat.perigee, sat.anomaly, sat.motion, sat.rev_num, sat.description]
 
     c.execute(sql_insert, vals)
     conn.commit()
@@ -42,8 +42,8 @@ class Satellite:
         self.inclination = None #inclination between equator and orbit plane (degrees)
         self.ascending = None #right ascension of ascending node (degrees)
         self.eccentricity = None #shape of orbit (0=circular, <1 = elliptical), add leading decimal to provided value
-        self.perigree = None #angle between ascending node and orbit's closest approache to earth (perigree aka periapsis) (degrees)
-        self.anomaly = None #angle measured from perigree, of the satellite location in the orbit referenced to a circular orbit with radius equal to semi-major axis
+        self.perigee = None #angle between ascending node and orbit's closest approache to earth (perigee aka periapsis) (degrees)
+        self.anomaly = None #angle measured from perigee, of the satellite location in the orbit referenced to a circular orbit with radius equal to semi-major axis
         self.motion = None #mean number of orbits per day (provided as xx.dddddddd)
         self.rev_num = None #orbit number at epoch time
 
@@ -57,7 +57,7 @@ class Satellite:
         print (f"Inclination: {self.inclination}")
         print (f"Ascending: {self.ascending}")
         print (f"Eccentricity: {self.eccentricity}")
-        print (f"Perigree: {self.perigree}")
+        print (f"perigee: {self.perigee}")
         print (f"Anomaly: {self.anomaly}")
         print (f"Motion: {self.motion}")
         print (f"Revolutions: {self.rev_num}")
@@ -73,12 +73,12 @@ def convert_drag(num):
         output *= -1
     return output
 
-def fetchall(sat_id, desc):
+def fetchall(sat_num, desc):
     
-    url = f"https://data.ivanstanojevic.me/api/tle/{sat_id}"
+    url = f"https://data.ivanstanojevic.me/api/tle/{sat_num}"
     headers = {"user-agent": "Mozilla/5.0 (X11 Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36"}
     response = requests.get( url, headers=headers)
-    sat = Satellite(str(sat_id), desc)
+    sat = Satellite(str(sat_num), desc)
     for line in (response.text.split(",")):
         if line.split(":")[0] == '"name"':
             sat.name = line.split(":")[1]
@@ -102,7 +102,7 @@ def fetchall(sat_id, desc):
                 if i ==2 : sat.inclination = float(num) 
                 elif i == 3: sat.ascending = float(num) 
                 elif i == 4: sat.eccentricity =  float(f"0.{num}")
-                elif i == 5: sat.perigree = float(num) 
+                elif i == 5: sat.perigee = float(num) 
                 elif i == 6: sat.anomaly = float(num) 
                 elif i == 7: 
                     sat.motion = float(num[:11]) 
@@ -110,15 +110,15 @@ def fetchall(sat_id, desc):
 
     # sat.print_attributes()
 
-    updatesql(sat)
+    return sat 
 
 def sat_fetch():
     
     sat_dict = pd.read_csv("./satellites.csv")
 
     for s in range(len(sat_dict)):
-        fetchall(sat_dict["sat_num"][s], sat_dict["description"][s])
-
+        sat = fetchall(sat_dict["sat_num"][s], sat_dict["description"][s])
+        updatesql(sat)
     
 if __name__ == "__main__":
     sat_fetch()
