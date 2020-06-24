@@ -80,20 +80,13 @@ def fetchall(sat_id, desc):
     response = requests.get( url, headers=headers)
     sat = Satellite(str(sat_id), desc)
     for line in (response.text.split(",")):
-        # print (line)
         if line.split(":")[0] == '"name"':
             sat.name = line.split(":")[1]
         elif line.split(":")[0] == '"line1"': 
-            # obj_dict = {1: sat.international_des,
-            #             2: sat.epoch,
-            #             3: sat.ballistic,
-            #             5: sat.drag
-            #             }\
+
             tle = [x for x in line.split(":")[1].split(' ') if x != ""]
             for i, num in enumerate(tle):
-                # if i in obj_dict:
-                #     obj_dict[i] = num
-                #     print (sat.international_des)
+
                 if i == 2: sat.international_des = str(num) 
                 elif i == 3: sat.epoch = str(num) 
                 elif i == 4: sat.ballistic = float(num) 
@@ -101,20 +94,11 @@ def fetchall(sat_id, desc):
 
 
         elif line.split(":")[0] == '"line2"':
-            # obj_dict = {1: sat.inclination,
-            #             2: sat.ascending,
-            #             3: sat.eccentricity,
-            #             4: sat.perigree,
-            #             5: sat.anomaly,
-            #             6: sat.motion,
-            #             7: sat.rev_num
-            #             }
-            # print(line.split(":")[1].split(' '))
+
             tle=[x for x in line.split(":")[1].split(' ') if x != ""]
 
             for i, num in enumerate(tle):
-                # if i in obj_dict:
-                #     obj_dict[i] = num
+
                 if i ==2 : sat.inclination = float(num) 
                 elif i == 3: sat.ascending = float(num) 
                 elif i == 4: sat.eccentricity =  float(f"0.{num}")
@@ -125,9 +109,6 @@ def fetchall(sat_id, desc):
                     sat.rev_num = int(num[10:15])
 
     # sat.print_attributes()
-    # print(sat.motion)
-    # print(sat.rev_num)
-    # exit()
 
     updatesql(sat)
 
@@ -138,13 +119,7 @@ def sat_fetch():
     for s in range(len(sat_dict)):
         fetchall(sat_dict["sat_num"][s], sat_dict["description"][s])
 
-# def check():
-#     db = sqlite3.connect('aircraft.db')
-#     table = pd.read_sql_query("select * from live", db)
-#     table.to_csv("live.csv")
     
 if __name__ == "__main__":
     sat_fetch()
-    # fetchall()
-    # check()
     
