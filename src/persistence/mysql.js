@@ -68,9 +68,9 @@ async function getItems() {
     });
 }
 
-async function getItem(id) {
+async function getItem(sat_num) {
     return new Promise((acc, rej) => {
-        pool.query('SELECT * FROM todo_items WHERE id=?', [id], (err, rows) => {
+        pool.query('SELECT * FROM latest_data WHERE sat_num=?', [sat_num], (err, rows) => {
             if (err) return rej(err);
             acc(
                 rows.map(item =>
@@ -83,17 +83,17 @@ async function getItem(id) {
     });
 }
 
-async function storeItem(item) {
-    return new Promise((acc, rej) => {
-        pool.query(
-            'INSERT INTO todo_items (id, name, completed) VALUES (?, ?, ?)',
-            [item.id, item.name, item.completed ? 1 : 0],
-            err => {
-                if (err) return rej(err);
-                acc();
-            },
-        );
-    });
+// async function storeItem(item) {
+//     return new Promise((acc, rej) => {
+//         pool.query(
+//             'INSERT INTO todo_items (id, name, completed) VALUES (?, ?, ?)',
+//             [item.id, item.name, item.completed ? 1 : 0],
+//             err => {
+//                 if (err) return rej(err);
+//                 acc();
+//             },
+//         );
+//     });
 }
 
 async function updateItem(id, item) {
