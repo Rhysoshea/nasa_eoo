@@ -1,11 +1,25 @@
 version: "3.7"
 services:
     app:
+        image: node:12-alpine
+        command: sh -c "yarn install && yarn run dev"
+        ports:
+            - 3000:3000
+        working_dir: /nasa_eoo 
+        volumes:
+            - ./:/nasa_eoo 
+        environment:
+            MYSQL_HOST: mysql 
+            MYSQL_USER: root
+            MYSQL_PASSWORD: secret
+            MYSQL_DB: todos
+
+    data:
         image: python:3.8
         tty: true #keeps container running
         command: sh -c "pip install --no-cache-dir -r requirements.txt && tail -F /dev/null" 
-        ports:
-            - 3000:3000
+        # ports:
+        #     - 3000:3000
         working_dir: /nasa_eoo 
         volumes:
             - ./:/nasa_eoo 
