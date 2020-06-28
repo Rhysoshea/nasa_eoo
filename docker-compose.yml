@@ -2,7 +2,7 @@ version: "3.7"
 services:
     app:
         image: node:12-alpine
-        command: sh -c "yarn install && yarn run dev"
+        command: sh -c "yarn install && yarn run dev && git clone https://github.com/webglearth/webglearth2.git && make cesium"
         ports:
             - 3000:3000
         working_dir: /nasa_eoo 
@@ -12,7 +12,7 @@ services:
             MYSQL_HOST: mysql 
             MYSQL_USER: root
             MYSQL_PASSWORD: secret
-            MYSQL_DB: todos
+            MYSQL_DB: eoo
 
     data:
         image: python:3.8
