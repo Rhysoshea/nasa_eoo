@@ -93,42 +93,36 @@ class App extends React.Component {
 }
 
 
-class DropdownList extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            items:["one", "two", "three"]
-        };
-    }
-    // const [items, setItems] = React.useState(null);
+function DropdownList()  {
 
-    // React.useEffect(() => {
-    //     fetch('/items')
-    //         .then(r => r.json())
-    //         .then(setItems);
-    // }, []);
+    const [items, setItems] = React.useState(null);
 
+    React.useEffect(() => {
+        fetch('/items')
+            .then(r => r.json())
+            .then(setItems);
+    }, []);
+
+    console.log(items);
 
     // if (this.state.items === null) return 'Loading...';
-    render() {
         return (
-            // console.log(this.state.items)
             // {this.state.items.length === 0 && (
             //     <p className="text-center">No satellites in database</p>
             // )}
-            <ItemDisplay items={this.state.items}/>
+            <ItemDisplay items={items}/>
                 // ))}
         );
-    }
+    
 }
 
-class ItemDisplay extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-    render() {
+function ItemDisplay (items) {
 
-        let optionItems = this.props.items.map((item) => 
+
+    if(items === null) return console.log('Loading...');
+
+
+        let optionItems = items.map((item) => 
             <option key={item}>{item}</option>
         );
 
@@ -149,7 +143,6 @@ class ItemDisplay extends React.Component {
             //         <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
             //     </Dropdown.Menu>
             // </Dropdown>}
-            // console.log(this.props.items);
             <div>
                 <div id="instructions">
                     <h1>Instructions:</h1>
@@ -163,7 +156,6 @@ class ItemDisplay extends React.Component {
                 </div>
             </div>
         );
-    }
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
