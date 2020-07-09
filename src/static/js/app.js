@@ -112,48 +112,13 @@ function DropdownList() {
     // console.log(optionItems)
     return (
         <ItemDisplay items={optionItems} />
-        // <div>
-        //     <div id="instructions">
-        //         <h1>Instructions:</h1>
-        //         <li>Select a satellite from the dropdown list</li>
-        //     </div>
-
-        //     <div>
-        //         <select id="sat_dropdown">
-        //             {optionItems}
-        //         </select>
-        //     </div>
-        // </div>
+ 
     );
 }
 
 function ItemDisplay ({items}) {
 
-
-    // if(items === null) return console.log('Loading...');
-
-
-    //     let optionItems = items.map((item) => 
-    //         <option key={item}>{item}</option>
-    //     );
-
         return (
-            // <DropdownButton id="dropdown-basic-button" title="Satellite List">
-            //     <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-            //     <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-            //     <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>        
-            // </DropdownButton>
-            // {<Dropdown>
-            //     <Dropdown.Toggle variant="success" id="dropdown-basic">
-            //         Dropdown Button
-            // </Dropdown.Toggle>
-
-            //     <Dropdown.Menu>
-            //         <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-            //         <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-            //         <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-            //     </Dropdown.Menu>
-            // </Dropdown>}
             <div>
                 <div id="instructions">
                     <h1>Instructions:</h1>
