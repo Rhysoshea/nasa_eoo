@@ -104,10 +104,10 @@ function DropdownList() {
 
 
     if (items === null) return 'Loading...';
-    // console.log(items);
+    console.log(items);
 
     let optionItems = items.map((item) =>
-        <option key={item}>{item.name}</option>
+        <option key={item} selected>{item.name}</option>
     );
     // console.log(optionItems)
     return (
@@ -116,26 +116,58 @@ function DropdownList() {
     );
 }
 
-function ItemDisplay ({items}) {
+class ItemDisplay extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {value: ''};
 
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    handleChange(event) {
+        this.setState({value: event.target.value});
+    }
+
+    render() {
         return (
             <div>
                 <div id="instructions">
                     <h1>Instructions:</h1>
-                    <p style={{color:"white"}}>Select a satellite from the dropdown list</p>
+                    <p style={{ color: "white" }}>Select a satellite from the dropdown list</p>
                 </div>
 
                 <div>
-                    <select id="sat_dropdown">
+                    <select id="sat_dropdown" value={this.state.value} onChange={this.handleChange}>
                         <option value="hide">-- Satellites --</option>
 
-                        {items}
+                        {this.props.items}
                     </select>
                 </div>
             </div>
         );
+    }
+
 }
 
 
+// function ItemDisplay({ items }) {
+
+//     return (
+//         <div>
+//             <div id="instructions">
+//                 <h1>Instructions:</h1>
+//                 <p style={{ color: "white" }}>Select a satellite from the dropdown list</p>
+//             </div>
+
+//             <div>
+//                 <select id="sat_dropdown">
+//                     <option value="hide">-- Satellites --</option>
+
+//                     {items}
+//                 </select>
+//             </div>
+//         </div>
+//     );
+// }
 
 ReactDOM.render(<App />, document.getElementById('root'));
