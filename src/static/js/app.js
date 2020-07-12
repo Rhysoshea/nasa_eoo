@@ -122,11 +122,13 @@ function ItemDisplay ({items}) {
             <div>
                 <div id="instructions">
                     <h1>Instructions:</h1>
-                    <li>Select a satellite from the dropdown list</li>
+                    <p style={{color:"white"}}>Select a satellite from the dropdown list</p>
                 </div>
 
                 <div>
                     <select id="sat_dropdown">
+                        <option value="hide">-- Satellites --</option>
+
                         {items}
                     </select>
                 </div>
