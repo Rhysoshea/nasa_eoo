@@ -53,9 +53,9 @@ async function teardown() {
     });
 }
 
-async function getItems() {
+async function getNames() {
     return new Promise((acc, rej) => {
-        pool.query('SELECT * FROM latest_data', (err, rows) => {
+        pool.query('SELECT DISTINCT name FROM latest_data', (err, rows) => {
             if (err) return rej(err);
             acc(
                 rows.map(item =>
@@ -66,9 +66,22 @@ async function getItems() {
     });
 }
 
-async function getItem(sat_num) {
+async function getItems() {
     return new Promise((acc, rej) => {
-        pool.query('SELECT * FROM latest_data WHERE sat_num=?', [sat_num], (err, rows) => {
+        pool.query('SELECT DISTINCT name FROM latest_data', (err, rows) => {
+            if (err) return rej(err);
+            acc(
+                rows.map(item =>
+                    Object.assign({}, item),
+                ),
+            );
+        });
+    });
+}
+
+async function getItem(name) {
+    return new Promise((acc, rej) => {
+        pool.query('SELECT * FROM latest_data WHERE name=?', [name], (err, rows) => {
             if (err) return rej(err);
             acc(
                 rows.map(item =>
@@ -121,6 +134,7 @@ module.exports = {
     teardown,
     getItems,
     getItem,
+    getNames,
     // storeItem,
     // updateItem,
     // removeItem,
