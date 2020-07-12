@@ -122,10 +122,16 @@ class ItemDisplay extends React.Component {
         this.state = {value: ''};
 
         this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     handleChange(event) {
         this.setState({value: event.target.value});
+    }
+
+    handleSubmit(event){
+        alert("Searching for satellite: " + this.state.value);
+        event.preventDefault();
     }
 
     render() {
@@ -136,18 +142,24 @@ class ItemDisplay extends React.Component {
                     <p style={{ color: "white" }}>Select a satellite from the dropdown list</p>
                 </div>
 
-                <div>
-                    <select id="sat_dropdown" value={this.state.value} onChange={this.handleChange}>
-                        <option value="hide">-- Satellites --</option>
+                <form onSubmit={this.handleSubmit}>
+                    <div>
+                        <select id="sat_dropdown" value={this.state.value} onChange={this.handleChange}>
+                            <option value="hide">-- Satellites --</option>
 
-                        {this.props.items}
-                    </select>
-                </div>
+                            {this.props.items}
+                        </select>
+                        <input type="submit" value="Show"/>
+                    </div>
+                </form>
+
             </div>
         );
     }
 
 }
+
+// function OrbitDisplay 
 
 
 // function ItemDisplay({ items }) {
