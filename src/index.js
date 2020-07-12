@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const db = require('./persistence');
-const getItems = require('./routes/getItems');
+const getNames = require('./routes/getItems');
 // const addItem = require('./routes/addItem');
 // const updateItem = require('./routes/updateItem');
 // const deleteItem = require('./routes/deleteItem');
@@ -9,7 +9,7 @@ const getItems = require('./routes/getItems');
 app.use(require('body-parser').json());
 app.use(express.static(__dirname + '/static'));
 
-app.get('/items', getItems);
+app.get('/items', getNames);
 // app.post('/items', addItem);
 // app.put('/items/:id', updateItem);
 // app.delete('/items/:id', deleteItem);
