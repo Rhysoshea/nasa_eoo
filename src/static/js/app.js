@@ -104,7 +104,7 @@ function DropdownList() {
 
 
     if (items === null) return 'Loading...';
-    console.log(items);
+    // console.log(items);
 
     let optionItems = items.map((item) =>
         <option key={item} selected>{item.name}</option>
@@ -130,12 +130,16 @@ class ItemDisplay extends React.Component {
     }
 
     handleSubmit(event){
+        // OrbitDisplay(sat_num=this.state.value);
         alert("Searching for satellite: " + this.state.value);
-        event.preventDefault();
+        // event.preventDefault();
     }
 
+    
     render() {
+
         return (
+
             <div>
                 <div id="instructions">
                     <h1>Instructions:</h1>
@@ -153,32 +157,93 @@ class ItemDisplay extends React.Component {
                     </div>
                 </form>
 
+                <OrbitDisplay sat_num={this.state.value}/>
+
             </div>
         );
     }
 
 }
 
-function OrbitDisplay (){
+class OrbitDisplay extends React.Component {
+    constructor(props) {
+        super(props);
+    }
 
-    var canvas = document.getElementById('myCanvas');
-    var context = canvas.getContext('2d');
-    var centerX = canvas.width / 2;
-    var centerY = canvas.height / 2;
-    var radius = 70;
+    render() {
+        var canvas = document.getElementById('myCanvas');
+        var context = canvas.getContext('2d');
+        var w = canvas.width;
+        var h = canvas.height;
+        var centerX = canvas.width / 2;
+        var centerY = canvas.height / 2;
+        var radius = 70;
+        var deg = 1; // degrees to rotate each frame by
+        var radians = (Math.PI / 180)*deg; // degree conversion to radians
+        // var Planet_Position = {X: centerX, Y: centerY};
+        // var Satellite_Position = {X: centerX +100, Y: centerY};
 
-    context.beginPath();
-    context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-    context.fillStyle = 'green';
-    context.fill();
-    context.lineWidth = 500;
-    context.strokeStyle = '#003300';
-    context.stroke();
+        var circle = function(color, r) {
+            context.lineColor = color;
+            context.lineWidth = 10;
+            context.beginPath();
+            context.arc(centerX, centerY, r, 0, 2*Math.PI, false);
+            context.closePath();
+            context.stroke();
+            // context.fill();
+        }
+   
+        var i = 0;
 
-    return (
-        <div></div>
-    )
+        circle("red", radius);
+        context.translate(centerX, centerY-10); //set origin to centre
+
+        var redraw = function() {
+            context.save(); //saves the current state to the stack
+
+            // context.translate(centerX+40, centerY); //set origin to centre
+
+            context.rotate(i/radians); //rotates canvas by (x) radians
+            context.translate(1,0); //moves canvas (0,0) point by (x,y) amount
+            circle("green", 10);
+
+            context.restore(); //restores the top of the stack, after we've drawn some shapes
+            i++;
+            window.requestAnimationFrame(redraw);
+        }
+        window.requestAnimationFrame(redraw);
+
+
+        return (
+            <div>      
+                {/* <canvas id="myCanvas" width="800" height="600"></canvas> */}
+            </div>
+        );
+    }
 }
+
+// function OrbitDisplay (sat_num){
+
+//     var canvas = document.getElementById('myCanvas');
+//     var context = canvas.getContext('2d');
+//     // var centerX = canvas.width / 2;
+//     // var centerY = canvas.height / 2;
+//     // var radius = 70;
+
+//     // context.beginPath();
+//     // context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+//     // context.fillStyle = 'green';
+//     // context.fill();
+//     // context.lineWidth = 500;
+//     // context.strokeStyle = '#003300';
+//     // context.stroke();
+//     context.font = "60px Arial";
+//     context.strokeText(sat_num, 10, 50);
+
+//     return (
+//       <canvas id="myCanvas" width="800" height="600"></canvas>
+//     )
+// }
 
 
 // function ItemDisplay({ items }) {
