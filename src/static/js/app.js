@@ -328,6 +328,165 @@ class OrbitDisplay extends React.Component {
             earthVertexIndexBuffer.numItems = indexData.length;
         }
 
+        function setupSatelliteBuffers() {
+            pwgl.satelliteVertexPositionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satelliteVertexPositionBuffer);
+            var satelliteVertexPosition = [
+                // Front face
+                1.0, 1.0, 1.0, //v0
+                -1.0, 1.0, 1.0, //v1
+                -1.0, -1.0, 1.0, //v2
+                1.0, -1.0, 1.0, //v3
+
+                // Back face
+                1.0, 1.0, -1.0, //v4
+                -1.0, 1.0, -1.0, //v5
+                -1.0, -1.0, -1.0, //v6
+                1.0, -1.0, -1.0, //v7
+
+                // Left face
+                -1.0, 1.0, 1.0, //v8
+                -1.0, 1.0, -1.0, //v9
+                -1.0, -1.0, -1.0, //v10
+                -1.0, -1.0, 1.0, //v11
+
+                // Right face
+                1.0, 1.0, 1.0, //12
+                1.0, -1.0, 1.0, //13
+                1.0, -1.0, -1.0, //14
+                1.0, 1.0, -1.0, //15
+
+                // Top face
+                1.0, 1.0, 1.0, //v16
+                1.0, 1.0, -1.0, //v17
+                -1.0, 1.0, -1.0, //v18
+                -1.0, 1.0, 1.0, //v19
+
+                // Bottom face
+                1.0, -1.0, 1.0, //v20
+                1.0, -1.0, -1.0, //v21
+                -1.0, -1.0, -1.0, //v22
+                -1.0, -1.0, 1.0, //v23
+            ];
+
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(satelliteVertexPosition),
+                gl.STATIC_DRAW);
+            pwgl.CUBE_VERTEX_POS_BUF_ITEM_SIZE = 3;
+            pwgl.CUBE_VERTEX_POS_BUF_NUM_ITEMS = 24;
+
+            // Setup buffer with index
+            pwgl.satelliteVertexIndexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.satelliteVertexIndexBuffer);
+
+            var cubeVertexIndices = [
+                0, 1, 2, 0, 2, 3,    // Front face
+                4, 6, 5, 4, 7, 6,    // Back face
+                8, 9, 10, 8, 10, 11,  // Left face
+                12, 13, 14, 12, 14, 15, // Right face
+                16, 17, 18, 16, 18, 19, // Top face
+                20, 22, 21, 20, 23, 22  // Bottom face
+            ];
+
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new
+                Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
+            pwgl.CUBE_VERTEX_INDEX_BUF_ITEM_SIZE = 1;
+            pwgl.SATELLITE_VERTEX_INDEX_BUF_NUM_ITEMS = 36;
+
+            // Setup buffer with texture coordinates
+            pwgl.satelliteVertexTextureCoordinateBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satelliteVertexTextureCoordinateBuffer);
+            var textureCoordinates = [
+                //Front face
+                0.0, 0.0,
+                0.0, 0.0,
+                0.0, 0.0,
+                0.0, 0.0,
+
+                // Back face
+                0.0, 0.0,
+                0.0, 0.0,
+                0.0, 0.0,
+                0.0, 0.0,
+
+                // Left face
+                1.0, 1.0,
+                1.0, 1.0,
+                1.0, 1.0,
+                1.0, 1.0,
+
+                // Right face
+                0.0, 0.0,
+                0.0, 0.0,
+                0.0, 0.0,
+                0.0, 0.0,
+
+                // Top face
+                0.0, 0.0,
+                0.0, 0.0,
+                0.0, 0.0,
+                0.0, 0.0,
+
+                // Bottom face
+                0.0, 0.0,
+                0.0, 0.0,
+                0.0, 0.0,
+                0.0, 0.0,
+            ];
+
+            gl.bufferData(gl.ARRAY_BUFFER, new
+                Float32Array(textureCoordinates), gl.STATIC_DRAW);
+            pwgl.CUBE_VERTEX_TEX_COORD_BUF_ITEM_SIZE = 2;
+            pwgl.CUBE_VERTEX_TEX_COORD_BUF_NUM_ITEMS = 24;
+
+
+
+            // Specify normals to be able to do lighting calculations
+            pwgl.satelliteVertexNormalBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satelliteVertexNormalBuffer);
+            var satelliteVertexNormals = [
+                // Front face
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+
+                // Back face
+                0.0, 0.0, -1.0,
+                0.0, 0.0, -1.0,
+                0.0, 0.0, -1.0,
+                0.0, 0.0, -1.0,
+
+                // Left face
+                -1.0, 0.0, 0.0,
+                -1.0, 0.0, 0.0,
+                -1.0, 0.0, 0.0,
+                -1.0, 0.0, 0.0,
+
+                // Right face
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+
+                // Top face
+                0.0, 1.0, 0.0,
+                0.0, 1.0, 0.0,
+                0.0, 1.0, 0.0,
+                0.0, 1.0, 0.0,
+
+                // Bottom face
+                0.0, -1.0, 0.0,
+                0.0, -1.0, 0.0,
+                0.0, -1.0, 0.0,
+                0.0, -1.0, 0.0,
+            ];
+
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(satelliteVertexNormals),
+                gl.STATIC_DRAW);
+            pwgl.CUBE_VERTEX_NORMAL_BUF_ITEM_SIZE = 3;
+            pwgl.CUBE_VERTEX_NORMAL_BUF_NUM_ITEMS = 24;
+        }
+
         return (
             <div>      
                 {/* <canvas id="myCanvas" width="800" height="600"></canvas> */}
