@@ -487,6 +487,38 @@ class OrbitDisplay extends React.Component {
             pwgl.CUBE_VERTEX_NORMAL_BUF_NUM_ITEMS = 24;
         }
 
+        function setupBuffers() {
+            setupEarthBuffers();
+            setupSatelliteBuffers();
+        }
+
+        function drawSatellite(texture) {
+            // Bind position buffer
+            gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satelliteVertexPositionBuffer);
+            gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc,
+                pwgl.CUBE_VERTEX_POS_BUF_ITEM_SIZE,
+                gl.FLOAT, false, 0, 0);
+
+            // Bind normal buffer
+            gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satelliteVertexNormalBuffer);
+            gl.vertexAttribPointer(pwgl.vertexNormalAttributeLoc,
+                pwgl.CUBE_VERTEX_NORMAL_BUF_ITEM_SIZE,
+                gl.FLOAT, false, 0, 0);
+
+            // bind texture coordinate buffer
+            gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satelliteVertexTextureCoordinateBuffer);
+            gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc,
+                pwgl.CUBE_VERTEX_TEX_COORD_BUF_ITEM_SIZE,
+                gl.FLOAT, false, 0, 0);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            // Bind index buffer and draw cube
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.satelliteVertexIndexBuffer);
+            gl.drawElements(gl.TRIANGLES, pwgl.SATELLITE_VERTEX_INDEX_BUF_NUM_ITEMS,
+                gl.UNSIGNED_SHORT, 0);
+        }
+
         return (
             <div>      
                 {/* <canvas id="myCanvas" width="800" height="600"></canvas> */}
