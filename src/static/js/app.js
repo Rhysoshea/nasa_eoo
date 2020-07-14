@@ -171,48 +171,162 @@ class OrbitDisplay extends React.Component {
     }
 
     render() {
-        var canvas = document.getElementById('myCanvas');
-        var context = canvas.getContext('2d');
-        var w = canvas.width;
-        var h = canvas.height;
-        var centerX = canvas.width / 2;
-        var centerY = canvas.height / 2;
-        var radius = 70;
-        var deg = 1; // degrees to rotate each frame by
-        var radians = (Math.PI / 180)*deg; // degree conversion to radians
-        // var Planet_Position = {X: centerX, Y: centerY};
-        // var Satellite_Position = {X: centerX +100, Y: centerY};
+        var gl;
+        var pwgl = {};
+        pwgl.ongoingImageLoads =[];
+        var canvas;
 
-        var circle = function(color, r) {
-            context.lineColor = color;
-            context.lineWidth = 10;
-            context.beginPath();
-            context.arc(centerX, centerY, r, 0, 2*Math.PI, false);
-            context.closePath();
-            context.stroke();
-            // context.fill();
+        // variables for interactive control 
+        var transY=0, transZ=0;
+        var xRot = yRot = zRot = xOffs = yOffs = drag = 0;
+        pwgl.listOfPressedKeys = [];
+        var lastTime = 0;
+
+        // keep track of pressed down keys in a list 
+        function createGLContext(canvas) {
+            var names = ["webgl", "experimental-webgl"];
+            var context = null;
+            for (var i=0; i<names.length; i++) {
+                try {
+                    context = canvas.getContext(names[i]);
+                }
+                catch(e) {
+                }
+                if (context) {
+                    break;
+                }
+            }
+            if (context) {
+                context.viewportWidth = canvas.width;
+                context.viewportHeight = canvas.height;
+            }
+            else {
+                alert("Failed to create WebGL context");
+            }
+            return context;
         }
-   
-        var i = 0;
 
-        circle("red", radius);
-        context.translate(centerX, centerY-10); //set origin to centre
+        // setup textures of objects
+        function setupTextures() {
+            // texture for the Earth
+            pwgl.earthTexture = gl.createTexture();
+            loadImageForTexture("https://github.com/Rhysoshea/nasa_eoo/blob/master/images/earth.jpg?raw=true",
+            pwgl.earthTexture);
 
-        var redraw = function() {
-            context.save(); //saves the current state to the stack
-
-            // context.translate(centerX+40, centerY); //set origin to centre
-
-            context.rotate(i/radians); //rotates canvas by (x) radians
-            context.translate(1,0); //moves canvas (0,0) point by (x,y) amount
-            circle("green", 10);
-
-            context.restore(); //restores the top of the stack, after we've drawn some shapes
-            i++;
-            window.requestAnimationFrame(redraw);
+            // texture for the satellite
+            pwgl.satelliteTexture = gl.createTexture("https://raw.githubusercontent.com/josh-street/webgl-earthsatellite/master/satellite.png",
+            pwgl.satelliteTexture);
         }
-        window.requestAnimationFrame(redraw);
+        
+        function loadImageForTexture(url, texture) {
+            var image = new Image();
+            image.crossOrigin = '';
+            image.onload = function() {
+                pwgl.ongoingImageLoads.splice(pwgl.ongoingImageLoads.indexOf(image), 1);
+                textureFinishedLoading(image,texture);
+            }
+            pwgl.ongoingImageLoads.push(image);
+            image.src = url;
+        }
 
+        function textureFinishedLoading(image, texture) {
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,
+                image);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.generateMipmap(gl.TEXTURE_2D);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+        }
+
+        function degToRad(degrees) {
+            return degrees * Math.PI / 180;
+        }
+
+
+        var mouseDown = false;
+        var lastMousex = null;
+        var lastMouseY = null;
+
+        var earthRotationMatrix = mat4.create();
+        mat4.identity(earthRotationMatrix);
+        var earthVertexPositionBuffer;
+        var earthVertexNormalBuffer;
+        var earthVertexTextureCoordBuffer;
+        var earthVertexIndexBuffer;
+
+        function setupEarthBuffers() {
+            // splits Earth into 60 lat and long bands, can increase for greater detail
+            var latitudeBands = 60; 
+            var longitudeBands = 60;
+            var radius = 5;
+            var vertexPositionData = [];
+            var normalData = [];
+            var textureCoordData = [];
+
+            for (var latNumber = 0; latNumber <= latitudeBands; latNumber++) {
+                var theta = latNumber*Math.PI / latitudeBands;
+                var sinTheta = Math.sin(theta);
+                var cosTheta = Math.cos(theta);
+                for (var longNumber = 0; longNumber <= longitudeBands; longNumber++) {
+                    var phi = longNumber*2*Math.PI / longitudeBands;
+                    var sinPhi = Math.sin(phi);
+                    var cosPhi = Math.cos(phi);
+                    var x = cosPhi * sinTheta;
+                    var y = cosTheta;
+                    var z = sinPhi * sinTheta;
+                    var u = 1 - (longNumber / longitudeBands);
+                    var v = 1 - (latNumber / latitudeBands);
+                    normalData.push(x);
+                    normalData.push(y);
+                    normalData.push(z);
+                    textureCoordData.push(u);
+                    textureCoordData.push(v);
+                    vertexPositionData.push(radius * x);
+                    vertexPositionData.push(radius * y);
+                    vertexPositionData.push(radius * z);
+                }
+            }
+
+
+            var indexData = [];
+            for (var latNumber = 0; latNumber < latitudeBands; latNumber++) {
+                for (var longNumber = 0; longNumber < longitudeBands; longNumber++) {
+                    var first = (latNumber * (longitudeBands + 1)) + longNumber;
+                    var second = first + longitudeBands + 1;
+                    indexData.push(first);
+                    indexData.push(second);
+                    indexData.push(first + 1);
+                    indexData.push(second);
+                    indexData.push(second + 1);
+                    indexData.push(first + 1);
+                }
+            }
+
+            earthVertexNormalBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, earthVertexNormalBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
+            earthVertexNormalBuffer.itemSize = 3;
+            earthVertexNormalBuffer.numItems = normalData.length / 3;
+            earthVertexTextureCoordBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, earthVertexTextureCoordBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
+            earthVertexTextureCoordBuffer.itemSize = 2;
+            earthVertexTextureCoordBuffer.numItems = textureCoordData.length / 2;
+            earthVertexPositionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, earthVertexPositionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositionData), gl.STATIC_DRAW);
+            earthVertexPositionBuffer.itemSize = 3;
+            earthVertexPositionBuffer.numItems = vertexPositionData.length / 3;
+            earthVertexIndexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, earthVertexIndexBuffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
+            earthVertexIndexBuffer.itemSize = 1;
+            earthVertexIndexBuffer.numItems = indexData.length;
+        }
 
         return (
             <div>      
@@ -222,27 +336,64 @@ class OrbitDisplay extends React.Component {
     }
 }
 
-// function OrbitDisplay (sat_num){
+// class OrbitDisplay extends React.Component {
+//     constructor(props) {
+//         super(props);
+//     }
 
-//     var canvas = document.getElementById('myCanvas');
-//     var context = canvas.getContext('2d');
-//     // var centerX = canvas.width / 2;
-//     // var centerY = canvas.height / 2;
-//     // var radius = 70;
+//     render() {
+//         var canvas = document.getElementById('myCanvas');
+//         var context = canvas.getContext('2d');
+//         var w = canvas.width;
+//         var h = canvas.height;
+//         var centerX = canvas.width / 2;
+//         var centerY = canvas.height / 2;
+//         var radius = 70;
+//         var deg = 100; // degrees to rotate each frame by
+//         var radians = (Math.PI / 180) * deg; // degree conversion to radians
+//         // var Planet_Position = {X: centerX, Y: centerY};
+//         // var Satellite_Position = {X: centerX +100, Y: centerY};
 
-//     // context.beginPath();
-//     // context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-//     // context.fillStyle = 'green';
-//     // context.fill();
-//     // context.lineWidth = 500;
-//     // context.strokeStyle = '#003300';
-//     // context.stroke();
-//     context.font = "60px Arial";
-//     context.strokeText(sat_num, 10, 50);
+//         var circle = function (color, r) {
+//             context.lineColor = color;
+//             context.lineWidth = 10;
+//             context.beginPath();
+//             context.arc(centerX, centerY, r, 0, 2 * Math.PI, false);
+//             context.closePath();
+//             context.stroke();
+//             // context.fill();
+//         }
 
-//     return (
-//       <canvas id="myCanvas" width="800" height="600"></canvas>
-//     )
+//         var i = 0;
+
+//         // context.translate(centerX, centerY-10); //set origin to centre
+
+//         var redraw = function () {
+//             context.save(); //saves the current state to the stack
+
+//             context.fillStyle = "white";
+//             context.fillRect(0, 0, w, h);
+
+//             // context.translate(centerX, centerY); //set origin to centre
+//             circle("red", radius);
+
+//             context.rotate(0); //rotates canvas by (x) radians
+//             context.translate(200, 0); //moves canvas (0,0) point by (x,y) amount
+//             circle("green", 50);
+
+//             context.restore(); //restores the top of the stack, after we've drawn some shapes
+//             i++;
+//             window.requestAnimationFrame(redraw);
+//         }
+//         window.requestAnimationFrame(redraw);
+
+
+//         return (
+//             <div>
+//                 {/* <canvas id="myCanvas" width="800" height="600"></canvas> */}
+//             </div>
+//         );
+//     }
 // }
 
 
