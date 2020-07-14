@@ -519,6 +519,19 @@ class OrbitDisplay extends React.Component {
                 gl.UNSIGNED_SHORT, 0);
         }
 
+        function drawEarth(texture) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, earthVertexPositionBuffer);
+            gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, earthVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, earthVertexNormalBuffer);
+            gl.vertexAttribPointer(pwgl.vertexNormalAttributeLoc, earthVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, earthVertexTextureCoordBuffer);
+            gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, earthVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, earthVertexIndexBuffer);
+            gl.drawElements(gl.TRIANGLES, earthVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+        }
+
         return (
             <div>      
                 {/* <canvas id="myCanvas" width="800" height="600"></canvas> */}
