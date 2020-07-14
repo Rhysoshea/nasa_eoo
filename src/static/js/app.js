@@ -532,6 +532,24 @@ class OrbitDisplay extends React.Component {
             gl.drawElements(gl.TRIANGLES, earthVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
         }
 
+        function startup() {
+            var canvas = document.getElementById("myCanvas");
+            canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
+            canvas.addEventListener('webglcontextlost', handleContextLost, false);
+            canvas.addEventListener('webglcontextrestored', handleContextRestored, false);
+            document.addEventListener('keydown', handleKeyDown, false);
+            document.addEventListener('keyup', handleKeyUp, false);
+            canvas.addEventListener('mousemove', mymousemove, false);
+            canvas.addEventListener('mousedown', mymousedown, false);
+            canvas.addEventListener('mouseup', mymouseup, false);
+            canvas.addEventListener('mousewheel', wheelHandler, false);
+            canvas.addEventListener('DOMMouseScroll', wheelHandler, false);
+            gl = createGLContext(canvas);
+            pwgl.fpsCounter = document.getElementById("fps");
+            init();
+            draw();        
+        }
+
         return (
             <div>      
                 {/* <canvas id="myCanvas" width="800" height="600"></canvas> */}
