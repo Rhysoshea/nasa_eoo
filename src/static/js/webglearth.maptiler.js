@@ -1,7 +1,7 @@
 var gl;
 var pwgl = {
-}
-    ;
+};
+
 pwgl.ongoingImageLoads = [];
 var canvas;
 // Variables for interactive control
