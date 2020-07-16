@@ -227,8 +227,6 @@ function degToRad(degrees) {
 }
 
 var mouseDown = false;
-var lastMouseX = null;
-var lastMouseY = null;
 var earthRotationMatrix = mat4.create();
 mat4.identity(earthRotationMatrix);
 var earthVertexPositionBuffer;
@@ -298,7 +296,7 @@ function setupEarthBuffers() {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, earthVertexIndexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
     earthVertexIndexBuffer.itemSize = 1;
-    earthVertexIndexBuffer.numItems = indexData.length;
+    earthVertexIndexBuffer.numItems = indexData.length; // the number of points to draw the Earth, from above calculations with latitude and longitude
 }
 
 function setupSatelliteBuffers() {
@@ -411,8 +409,6 @@ function setupSatelliteBuffers() {
     pwgl.CUBE_VERTEX_TEX_COORD_BUF_ITEM_SIZE = 2;
     pwgl.CUBE_VERTEX_TEX_COORD_BUF_NUM_ITEMS = 24;
 
-
-
     // Specify normals to be able to do lighting calculations
     pwgl.satelliteVertexNormalBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satelliteVertexNormalBuffer);
@@ -491,6 +487,8 @@ function drawSatellite(texture) {
 }
 
 function drawEarth(texture) {
+    // bindBuffer binds array to be used by GPU
+    // vertexAttribPointer tells Webgl how to interpret data
     gl.bindBuffer(gl.ARRAY_BUFFER, earthVertexPositionBuffer);
     gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, earthVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, earthVertexNormalBuffer);
@@ -538,21 +536,24 @@ function draw() {
         pwgl.animationStartTime = currentTime;
     }
 
-    pwgl.angle = (currentTime - pwgl.animationStartTime) / pwgl.orbitalMultipler * 2 * Math.PI %
-        (2 * Math.PI);
+    pwgl.angle = (currentTime - pwgl.animationStartTime) / pwgl.orbitalMultipler * 2 * Math.PI % (2 * Math.PI); // determines where in the orbit the satellite should be at a given time
     pwgl.x = Math.cos(pwgl.angle) * pwgl.circleRadius;
     pwgl.z = Math.sin(pwgl.angle) * pwgl.circleRadius;
 
 
     mat4.translate(pwgl.modelViewMatrix, [pwgl.x, pwgl.y, pwgl.z],
-        pwgl.modelViewMatrix);
+        pwgl.modelViewMatrix); 
+        // translates the vector x,y,z by modelViewMatrix and stores the update in modelViewMatrix
+        // moves the satellite around the orbit
     mat4.scale(pwgl.modelViewMatrix, [0.5, 0.5, 0.5], pwgl.modelViewMatrix);
+        // determines the size of the satellite image
+        // scales the vector 0.5,0.5,0.5 by modelViewMatrix and stores the update in modelViewMatrix
 
     // CRUDE NOT WORKING FULLY 
     pwgl.satRotation = -degToRad(newAngle) * pwgl.satMultiplier;
     mat4.rotateY(pwgl.modelViewMatrix, pwgl.satRotation, pwgl.modelViewMatrix);
     uploadModelViewMatrixToShader();
-    uploadNormalMatrixToShader();
+    // uploadNormalMatrixToShader();
     uploadProjectionMatrixToShader();
     drawSatellite(pwgl.satelliteTexture);
     popModelViewMatrix();
@@ -590,9 +591,9 @@ function init() {
     pwgl.x = 0.0;
     pwgl.y = 0.0;
     pwgl.z = 0.0;
-    pwgl.circleRadius = 10.0;
+    pwgl.circleRadius = 10.0; // radius of satellite around Earth
     pwgl.orbitalMultipler = 2000;
-    pwgl.satMultiplier = 2;
+    pwgl.satMultiplier = 1; // spin of satellite
 
 
     // Initialize some variables related to the animation
