@@ -507,12 +507,6 @@ function draw() {
     pwgl.requestId = requestAnimFrame(draw);
     var currentTime = Date.now();
     handlePressedDownKeys();
-    // Update FPS if a second or more has passed since last FPS update
-    if (currentTime - pwgl.previousFrameTimeStamp >= 1000) {
-        pwgl.fpsCounter.innerHTML = pwgl.nbrOfFramesForFPS;
-        pwgl.nbrOfFramesForFPS = 0;
-        pwgl.previousFrameTimeStamp = currentTime;
-    }
 
     mat4.translate(pwgl.modelViewMatrix, [0.0, transY, transZ],
         pwgl.modelViewMatrix);
@@ -562,12 +556,11 @@ function draw() {
     uploadProjectionMatrixToShader();
     drawSatellite(pwgl.satelliteTexture);
     popModelViewMatrix();
-    pwgl.nbrOfFramesForFPS++;
 }
 
 function startup() {
     var canvas = document.getElementById("myCanvas");
-    // canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
+    canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
     canvas.addEventListener('webglcontextlost', handleContextLost, false);
     canvas.addEventListener('webglcontextrestored', handleContextRestored,
         false);
@@ -579,7 +572,6 @@ function startup() {
     canvas.addEventListener('mousewheel', wheelHandler, false);
     canvas.addEventListener('DOMMouseScroll', wheelHandler, false);
     gl = createGLContext(canvas);
-    pwgl.fpsCounter = document.getElementById("fps");
     init();
     draw();
 }
@@ -605,7 +597,6 @@ function init() {
 
     // Initialize some variables related to the animation
     pwgl.animationStartTime = undefined;
-    pwgl.nbrOfFramesForFPS = 0;
     pwgl.previousFrameTimeStamp = Date.now();
     mat4.perspective(30, gl.viewportWidth / gl.viewportHeight, 1, 100.0, pwgl.projectionMatrix);
     mat4.identity(pwgl.modelViewMatrix);
