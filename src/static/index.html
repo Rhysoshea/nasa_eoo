@@ -2,15 +2,18 @@
 <html>
 
 <head>
-    <script src="http://www.webglearth.com/v2/api.js"></script> 
+    <!-- <script src="http://www.webglearth.com/v2/api.js"></script>  -->
+    <script src="https://cdn.rawgit.com/josh-street/webgl-earthsatellite/master/glMatrix.js"></script>
+    <script src="https://cdn.rawgit.com/josh-street/webgl-earthsatellite/master/webgl/webgl-debug.js"></script>
+    <script src="https://cdn.rawgit.com/josh-street/webgl-earthsatellite/master/webgl/webgl-utils.js"></script>
+
     <script src="js/webglearth.maptiler.js"></script>
-    <!-- <script src="js/satellite.dropdown.js"></script> -->
 
     <link rel="stylesheet" href="css/styles.css" />
     <title>NASA Orbits</title>
 </head>
 
-<body onload="initialize()">
+<body onload="startup()">
     
     <div id="root"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
@@ -26,7 +29,7 @@
 
     <!-- <div id="earth_div"></div> -->
 
-    <canvas id="myCanvas" width="800" height="600"></canvas>
+    <canvas id="myCanvas" width="1400" height="800"></canvas>
 
 </body>
 
