@@ -1,6 +1,6 @@
 body {
     /* background-color: #030000; */
-    background-image: url("https://raw.githubusercontent.com/josh-street/webgl-earthsatellite/master/bg.jpg");  
+    /* background-image: url("https://raw.githubusercontent.com/josh-street/webgl-earthsatellite/master/bg.jpg");   */
 
     margin-top: 50px;
     font-family: 'Lato';
@@ -21,7 +21,7 @@ body {
   }
 
   #myCanvas {
-    background-image: //url("https://raw.githubusercontent.com/josh-street/webgl-earthsatellite/master/bg.jpg");  
+    /* background-image: //url("https://raw.githubusercontent.com/josh-street/webgl-earthsatellite/master/bg.jpg");   */
     position: absolute; 
     top: 0px;
     left: 0px;
