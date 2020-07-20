@@ -234,6 +234,24 @@ var earthVertexNormalBuffer;
 var earthVertexTextureCoordBuffer;
 var earthVertexIndexBuffer;
 
+function setupOrbitBuffers() {
+
+    orbitBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, orbitBuffer);
+
+    const positions = [
+        -1.0, 1.0,
+         1.0, 1.0,
+        -1.0, -1.0,
+         1.0, -1.0,
+    ];
+
+    gl.bufferData(gl.ARRAY_BUFFER, 
+                  new Float32Array(positions),
+                  gl.STATIC_DRAW);
+
+}
+
 function setupEarthBuffers() {
     var latitudeBands = 60;
     var longitudeBands = 60;
@@ -455,10 +473,15 @@ function setupSatelliteBuffers() {
     pwgl.CUBE_VERTEX_NORMAL_BUF_ITEM_SIZE = 3;
     pwgl.CUBE_VERTEX_NORMAL_BUF_NUM_ITEMS = 24;
 }
+
+
 function setupBuffers() {
     setupEarthBuffers();
     setupSatelliteBuffers();
+    setupOrbitBuffers();
 }
+
+
 function drawSatellite(texture) {
     // Bind position buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satelliteVertexPositionBuffer);
@@ -500,6 +523,31 @@ function drawEarth(texture) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, earthVertexIndexBuffer);
     gl.drawElements(gl.TRIANGLES, earthVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 }
+
+function drawOrbit() {
+
+    const positions = [
+        0.0, 0.0
+    ]
+
+    const colors = [
+        1.0, 1.0, 1.0, 1.0,
+    ]
+
+    const stops = 100;
+
+    for (i=0; i<stops; i++){
+        positions.push(Math.cos(i*2*Math.PI/stops));
+        positions.push(Math.sin(i*2*Math.PI/stops));
+        colors.push(1.0, 1.0, 1.0, 1.0)
+    }
+
+    console.log(positions);
+    console.log(colors);
+    gl.drawElements(gl.TRIANGLE_FAN, 101, gl.SHORT, 0);
+}
+
+
 var newAngle = 0;
 function draw() {
     pwgl.requestId = requestAnimFrame(draw);
@@ -557,6 +605,10 @@ function draw() {
     uploadProjectionMatrixToShader();
     drawSatellite(pwgl.satelliteTexture);
     popModelViewMatrix();
+
+    const offset = 0;
+    const vertexCount = 4;
+    drawOrbit();
 }
 
 function startup() {
