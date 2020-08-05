@@ -34,11 +34,68 @@ function createGLContext(canvas) {
 }
 
 
+var vertexShaderSrc = 'attribute vec3 coordinates;' + 
+                      'void main(void) {' +
+                      ' gl_Position = vec4(coordinates, 1.0);' + 
+                      '}';
+
+var fragmentShaderSrc = 'void main(void) {' + 
+                        ' gl_FragColor = vec4(0, 0.8, 0, 1);' + 
+                        '}';
+
+
+
 
 function degToRad(degrees) {
     return degrees * Math.PI / 180;
 }
 
+function setupShaders() {
+    var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertexShader, vertexShaderSrc);
+    gl.compileShader(vertexShader);
+    var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragmentShader, fragmentShaderSrc);
+    gl.compileShader(fragmentShader);
+    // check shaders compiled
+    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)){
+        alert("Could not compile vertex shader: " + gl.getShaderInfoLog(vertexShader));
+    }
+    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+        alert("Could not compile vertex shader: " + gl.getShaderInfoLog(fragmentShader));
+    }
+
+    var shaderProgram = gl.createProgram();
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+    gl.linkProgram(shaderProgram);
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        alert("Could not initialise shaders " + gl.getProgramInfoLog(shaderProgram));
+    }
+    gl.useProgram(shaderProgram);
+    // pwgl.vertexPositionAttributeLoc = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+    // gl.enableVertexAttribArray(pwgl.vertexPositionAttributeLoc);
+    // pwgl.vertexTextureAttributeLoc = gl.getAttribLocation(shaderProgram, "aTextureCoordinates");
+    // gl.enableVertexAttribArray(pwgl.vertexTextureAttributeLoc);
+    // pwgl.vertexNormalAttributeLoc = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+    // gl.enableVertexAttribArray(pwgl.vertexNormalAttributeLoc);
+    // pwgl.uniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, "uPMatrix");
+    // pwgl.uniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+    // pwgl.uniformNormalMatrixLoc = gl.getUniformLocation(shaderProgram, "uNMatrix");
+    // pwgl.uniformSamplerLoc = gl.getUniformLocation(shaderProgram, "uSampler");
+    // pwgl.uniformLightPositionLoc = gl.getUniformLocation(shaderProgram,
+    //     "uLightPosition");
+    // pwgl.uniformAmbientLightColorLoc = gl.getUniformLocation(shaderProgram,
+    //     "uAmbientLightColor");
+    // pwgl.uniformDiffuseLightColorLoc = gl.getUniformLocation(shaderProgram,
+    //     "uDiffuseLightColor");
+    // pwgl.uniformSpecularLightColorLoc = gl.getUniformLocation(shaderProgram,
+    //     "uSpecularLightColor");
+    // pwgl.uniformSpotDirectionLoc = gl.getUniformLocation(shaderProgram, "uSpotDirection");
+    // pwgl.modelViewMatrix = mat4.create();
+    // pwgl.modelViewMatrixStack = [];
+    // pwgl.projectionMatrix = mat4.create();
+}
 
 
 function setupOrbitBuffers() {
@@ -46,16 +103,16 @@ function setupOrbitBuffers() {
     orbitBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, orbitBuffer);
 
-    const positions = [
-        -1.0, 1.0,
-         1.0, 1.0,
-        -1.0, -1.0,
-         1.0, -1.0,
-    ];
+    // const positions = [
+    //     -1.0, 1.0,
+    //      1.0, 1.0,
+    //     -1.0, -1.0,
+    //      1.0, -1.0,
+    // ];
 
-    gl.bufferData(gl.ARRAY_BUFFER, 
-                  new Float32Array(positions),
-                  gl.STATIC_DRAW);
+    // gl.bufferData(gl.ARRAY_BUFFER, 
+    //               new Float32Array(positions),
+    //               gl.STATIC_DRAW);
 
 }
 
@@ -70,33 +127,35 @@ function setupBuffers() {
 
 function drawOrbit() {
 
-    const positions = [
-        0.0, 0.0
-    ]
+    const positions = [];
 
+    var r = 10;
+
+    var center = (0, 0);
+    positions.push(center);
     const colors = [
-        1.0, 1.0, 1.0, 1.0,
+        0.0, 0.0, 0.0, 1.0,
     ]
 
     const stops = 100;
 
     for (i=0; i<stops; i++){
-        positions.push(Math.cos(100*i*2*Math.PI/stops));
-        positions.push(Math.sin(100*i*2*Math.PI/stops));
-        colors.push(1.0, 1.0, 1.0, 1.0)
+        positions.push( center + (
+            (r*Math.cos(i * 2 * Math.PI / stops)),
+            (r*Math.sin(i * 2 * Math.PI / stops))
+        ));
+
     }
 
-    // console.log(positions);
+    console.log(positions);
     // console.log(colors);
-    gl.drawElements(gl.TRIANGLES, 101, gl.DOUBLE, 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 101);
 }
 
 
 var newAngle = 0;
 function draw() {
     var currentTime = Date.now();
-
-
 
     yRot = xRot = zRot = transY = transZ = 0;
 
@@ -138,7 +197,7 @@ var relation = 1.6 / 2500;
 function init() {
     // Initialization that is performed during first startup and when the
     // event webglcontextrestored is received is included in this function.
-    // setupShaders();
+    setupShaders();
     setupBuffers();
 
     // Transparent canvas for space background image
