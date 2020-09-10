@@ -19,8 +19,8 @@ Visualise Earth-orbiting objects from NASA TLE (Two Line Element) data
 
 Using docker-compose, the application spins up 3 docker containers as microservices. Each container manages the following functionality:
 - Application and front-end, using nodeJS container (JavaScript and React)
-- Data fetching using NASA API and parsing / calculating required information for plotting correct orbits
-- Data storage using SQL relational database, as the data remains structured 
+- Data fetching using NASA API and parsing / calculating required information for plotting correct orbits (Python)
+- Data storage using MySQL relational database, as the data remains structured (SQL)
 
 ## Additional information and resources
 
