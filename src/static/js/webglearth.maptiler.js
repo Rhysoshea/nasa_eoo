@@ -257,4 +257,3 @@ function startup() {
         requestAnimationFrame(drawScene);
     }
 }
-
