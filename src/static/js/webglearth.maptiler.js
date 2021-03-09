@@ -1,223 +1,260 @@
-var gl;
-var pwgl = {
+const gl = document.getElementById("myCanvas").getContext("webgl2");
+
+var vs = `#version 300 es
+
+in vec4 a_position;
+in vec4 a_color;
+
+uniform mat4 u_matrix;
+
+out vec4 v_color;
+
+void main() {
+  // Multiply the position by the matrix.
+  gl_Position = u_matrix * a_position;
+
+  // Pass the color to the fragment shader.
+  v_color = a_color;
+}
+`;
+
+var fs = `#version 300 es
+precision highp float;
+
+// Passed in from the vertex shader.
+in vec4 v_color;
+
+uniform vec4 u_colorMult;
+uniform vec4 u_colorOffset;
+
+out vec4 outColor;
+
+void main() {
+   outColor = v_color * u_colorMult + u_colorOffset;
+}
+`;
+
+var Node = function (source) {
+    this.children = [];
+    this.localMatrix = m4.identity();
+    this.worldMatrix = m4.identity();
+    this.source = source;
 };
 
-pwgl.ongoingImageLoads = [];
-var canvas;
-// Variables for interactive control
-var transY = 0, transZ = 0;
-var xRot = yRot = zRot = xOffs = yOffs = drag = 0;
-pwgl.listOfPressedKeys = []; // Keep track of pressed down keys in a list
-var lastTime = 0;
-
-
-function createGLContext(canvas) {
-    var names = ["webgl", "experimental-webgl"];
-    var context = null;
-    for (var i = 0; i < names.length; i++) {
-        try {
-            context = canvas.getContext(names[i]);
-        }
-        catch (e) {
-        }
-        if (context) {
-            break;
+Node.prototype.setParent = function (parent) {
+    // remove us from our parent
+    if (this.parent) {
+        var ndx = this.parent.children.indexOf(this);
+        if (ndx >= 0) {
+            this.parent.children.splice(ndx, 1);
         }
     }
-    if (context) {
-        context.viewportWidth = canvas.width;
-        context.viewportHeight = canvas.height;
+
+    // Add us to our new parent
+    if (parent) {
+        parent.children.push(this);
     }
-    else {
-        alert("Failed to create WebGL context!");
-    }
-    return context;
-}
+    this.parent = parent;
+};
 
+Node.prototype.updateWorldMatrix = function (matrix) {
 
-var vertexShaderSrc = 'attribute vec3 coordinates;' + 
-                      'void main(void) {' +
-                      ' gl_Position = vec4(coordinates, 1.0);' + 
-                      '}';
-
-var fragmentShaderSrc = 'void main(void) {' + 
-                        ' gl_FragColor = vec4(0, 0, 0, 1);' + 
-                        '}';
-
-
-
-
-function degToRad(degrees) {
-    return degrees * Math.PI / 180;
-}
-
-function setupShaders() {
-    var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertexShader, vertexShaderSrc);
-    gl.compileShader(vertexShader);
-    var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fragmentShader, fragmentShaderSrc);
-    gl.compileShader(fragmentShader);
-    // check shaders compiled
-    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)){
-        alert("Could not compile vertex shader: " + gl.getShaderInfoLog(vertexShader));
-    }
-    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-        alert("Could not compile vertex shader: " + gl.getShaderInfoLog(fragmentShader));
+    var source = this.source;
+    if(source) {
+        source.getMatrix(this.localMatrix);
     }
 
-    var shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert("Could not initialise shaders " + gl.getProgramInfoLog(shaderProgram));
+    if (matrix) {
+        // a matrix was passed in so do the math
+        m4.multiply(matrix, this.localMatrix, this.worldMatrix);
+    } else {
+        // no matrix was passed in so just copy.
+        m4.copy(this.localMatrix, this.worldMatrix);
     }
 
-    var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-
-    gl.useProgram(shaderProgram);
-    gl.enableVertexAttribArray(positionAttributeLocation);
-
-    // pwgl.vertexPositionAttributeLoc = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    // gl.enableVertexAttribArray(pwgl.vertexPositionAttributeLoc);
-    // pwgl.vertexTextureAttributeLoc = gl.getAttribLocation(shaderProgram, "aTextureCoordinates");
-    // gl.enableVertexAttribArray(pwgl.vertexTextureAttributeLoc);
-    // pwgl.vertexNormalAttributeLoc = gl.getAttribLocation(shaderProgram, "aVertexNormal");
-    // gl.enableVertexAttribArray(pwgl.vertexNormalAttributeLoc);
-    // pwgl.uniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, "uPMatrix");
-    // pwgl.uniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-    // pwgl.uniformNormalMatrixLoc = gl.getUniformLocation(shaderProgram, "uNMatrix");
-    // pwgl.uniformSamplerLoc = gl.getUniformLocation(shaderProgram, "uSampler");
-    // pwgl.uniformLightPositionLoc = gl.getUniformLocation(shaderProgram,
-    //     "uLightPosition");
-    // pwgl.uniformAmbientLightColorLoc = gl.getUniformLocation(shaderProgram,
-    //     "uAmbientLightColor");
-    // pwgl.uniformDiffuseLightColorLoc = gl.getUniformLocation(shaderProgram,
-    //     "uDiffuseLightColor");
-    // pwgl.uniformSpecularLightColorLoc = gl.getUniformLocation(shaderProgram,
-    //     "uSpecularLightColor");
-    // pwgl.uniformSpotDirectionLoc = gl.getUniformLocation(shaderProgram, "uSpotDirection");
-    // pwgl.modelViewMatrix = mat4.create();
-    // pwgl.modelViewMatrixStack = [];
-    // pwgl.projectionMatrix = mat4.create();
-}
+    // now process all the children
+    var worldMatrix = this.worldMatrix;
+    this.children.forEach(function (child) {
+        child.updateWorldMatrix(worldMatrix);
+    });
+};
 
 
-function setupOrbitBuffers() {
+// TRS and adding a source used for fixing error collected with each frame
+var TRS = function () {
+    this.translation = [0, 0, 0];
+    this.rotation = [0, 0, 0];
+    this.scale = [1, 1, 1];
+};
 
-    orbitBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, orbitBuffer);
+TRS.prototype.getMatrix = function (dst) {
+    dst = dst || new Float32Array(16);
+    var t = this.translation;
+    var r = this.rotation;
+    var s = this.scale;
 
-    const positions = [
-        0, 0,
-         0, 0.5,
-        0.7, 0
-    ];
-
-    gl.bufferData(gl.ARRAY_BUFFER, 
-                  new Float32Array(positions),
-                  gl.STATIC_DRAW);
-
-}
-
-
-
-
-function setupBuffers() {
-    setupOrbitBuffers();
-}
-
-
-
-function drawOrbit() {
-
-    const positions = [];
-
-    var r = 10;
-
-    // var center = (0, 0);
-    // positions.push(center);
-    // const colors = [
-    //     0.0, 0.0, 0.0, 1.0,
-    // ]
-
-    // const stops = 100;
-
-    // for (i=0; i<stops; i++){
-    //     positions.push( center + (
-    //         (r*Math.cos(i * 2 * Math.PI / stops)),
-    //         (r*Math.sin(i * 2 * Math.PI / stops))
-    //     ));
-
-    // }
-
-    var offset = 0;
-    var count =3;
-
-    console.log(positions);
-    // console.log(colors);
-    gl.drawArrays(gl.TRIANGLES, offset, count);
-}
-
-
-var newAngle = 0;
-function draw() {
-    // var currentTime = Date.now();
-
-    // yRot = xRot = zRot = transY = transZ = 0;
-
-    // gl.uniform1i(pwgl.uniformSamplerLoc, 0);
-    // var timeNow = new Date().getTime();
-    // if (lastTime != 0) {
-    //     var elapsed = timeNow - lastTime;
-    //     newAngle += (90 * elapsed) / 1000;
-    // }
-    // lastTime = timeNow;
-    // var rotationSpeed = -degToRad(newAngle) / 50; // Sets earth rotation speed 
-    // if (currentTime === undefined) {
-    //     currentTime = Date.now();
-    // }
-
-    // if (pwgl.animationStartTime === undefined) {
-    //     pwgl.animationStartTime = currentTime;
-    // }
-
-    // pwgl.angle = (currentTime - pwgl.animationStartTime) / pwgl.orbitalMultipler * 2 * Math.PI % (2 * Math.PI); // determines where in the orbit the satellite should be at a given time
-    // pwgl.x = Math.cos(pwgl.angle) * pwgl.circleRadius;
-    // pwgl.z = Math.sin(pwgl.angle) * pwgl.circleRadius;
-
-
-    // const offset = 0;
-    // const vertexCount = 4;
-    drawOrbit();
-}
+    // compute a matrix from translation, rotation, and scale
+    m4.translation(t[0], t[1], t[2], dst);
+    m4.xRotate(dst, r[0], dst);
+    m4.yRotate(dst, r[1], dst);
+    m4.zRotate(dst, r[2], dst);
+    m4.scale(dst, s[0], s[1], s[2], dst);
+    return dst;
+};
 
 function startup() {
-    var canvas = document.getElementById("myCanvas");
-    canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
-    gl = createGLContext(canvas);
-    init();
-    draw();
-}
-
-var relation = 1.6 / 2500;
-function init() {
-    // Initialization that is performed during first startup and when the
-    // event webglcontextrestored is received is included in this function.
-    setupShaders();
-    setupBuffers();
-
-    // Transparent canvas for space background image
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.enable(gl.DEPTH_TEST);
-    pwgl.x = 0.0;
-    pwgl.y = 0.0;
-    pwgl.z = 0.0;
-    pwgl.circleRadius = 10.0; // radius of satellite around Earth
-    pwgl.orbitalMultipler = 2000;
-    pwgl.satMultiplier = 1; // spin of satellite
 
 
+    // Tell the twgl to match position with a_position, n
+    // normal with a_normal etc..
+    twgl.setAttributePrefix("a_");
+
+    var sphereBufferInfo = flattenedPrimitives.createSphereBufferInfo(gl, 10, 12, 6);
+
+    // setup GLSL program
+    var programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+
+    var sphereVAO = twgl.createVAOFromBufferInfo(gl, programInfo, sphereBufferInfo);
+
+    function degToRad(d) {
+        return d * Math.PI / 180;
+    }
+
+    var fieldOfViewRadians = degToRad(60);
+
+    var objectsToDraw = [];
+    var objects = [];
+
+    var someTRS = new TRS();
+    var someNode = new Node(someTRS);
+
+    // Let's make all the nodes
+    var solarSystemNode = new Node();
+    var earthOrbitNode = new Node();
+    // earth orbit 100 units from the sun
+    earthOrbitNode.localMatrix = m4.translation(100, 0, 0);
+
+    var moonOrbitNode = new Node();
+    // moon 20 units from the earth
+    moonOrbitNode.localMatrix = m4.translation(30, 0, 0);
+
+    var sunNode = new Node();
+    sunNode.localMatrix = m4.scaling(5, 5, 5); // make the sun 5 times as large
+    sunNode.drawInfo = {
+        uniforms: {
+            u_colorOffset: [0.6, 0.6, 0, 1], // yellow
+            u_colorMult: [0.4, 0.4, 0, 1],
+        },
+        programInfo: programInfo,
+        bufferInfo: sphereBufferInfo,
+        vertexArray: sphereVAO,
+    };
+
+    var earthNode = new Node();
+
+    // make the earth twice as large
+    earthNode.localMatrix = m4.scaling(2, 2, 2);   // make the earth twice as large
+    earthNode.drawInfo = {
+        uniforms: {
+            u_colorOffset: [0.2, 0.5, 0.8, 1],  // blue-green
+            u_colorMult: [0.8, 0.5, 0.2, 1],
+        },
+        programInfo: programInfo,
+        bufferInfo: sphereBufferInfo,
+        vertexArray: sphereVAO,
+    };
+
+    var moonNode = new Node();
+    moonNode.localMatrix = m4.scaling(0.4,0.4,0.4);
+    moonNode.drawInfo = {
+        uniforms: {
+            u_colorOffset: [0.6, 0.6, 0.6, 1],  // gray
+            u_colorMult: [0.1, 0.1, 0.1, 1],
+        },
+        programInfo: programInfo,
+        bufferInfo: sphereBufferInfo,
+        vertexArray: sphereVAO,
+    };
+
+    // connect the celetial objects
+    sunNode.setParent(solarSystemNode);
+    earthOrbitNode.setParent(solarSystemNode);
+    earthNode.setParent(earthOrbitNode);
+    moonOrbitNode.setParent(earthOrbitNode);
+    moonNode.setParent(moonOrbitNode);
+
+    var objects = [
+        sunNode,
+        earthNode,
+        moonNode,
+    ];
+
+    var objectsToDraw = [
+        sunNode.drawInfo,
+        earthNode.drawInfo,
+        moonNode.drawInfo,
+    ];
+
+    requestAnimationFrame(drawScene);
+    // Draw the scene.
+    function drawScene(time) {
+        time *= 0.001;
+
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+
+        // Tell WebGL how to convert from clip space to pixels
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.DEPTH_TEST);
+
+        // Clear the canvas AND the depth buffer.
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // Compute the projection matrix
+        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        var projectionMatrix =
+            m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
+
+        // Compute the camera's matrix using look at.
+        var cameraPosition = [0, -200, 0];
+        var target = [0, 0, 0];
+        var up = [0, 0, 1];
+        var cameraMatrix = m4.lookAt(cameraPosition, target, up);
+
+        // Make a view matrix from the camera matrix.
+        var viewMatrix = m4.inverse(cameraMatrix);
+
+        var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+
+        // update the local matrices for each object.
+        m4.multiply(m4.yRotation(0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
+        m4.multiply(m4.yRotation(0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
+
+        // spin the sun
+        m4.multiply(m4.yRotation(0.005), sunNode.localMatrix, sunNode.localMatrix);
+        // spin the earth
+        m4.multiply(m4.yRotation(0.05), earthNode.localMatrix, earthNode.localMatrix);
+        // spin the moon
+        m4.multiply(m4.yRotation(-0.01), moonNode.localMatrix, moonNode.localMatrix);
+
+        // Update all world matrices in the scene graph
+        solarSystemNode.updateWorldMatrix();
+
+        someTRS.rotation[2] += time;
+
+
+        // Compute all the matrices for rendering
+        objects.forEach(function (object) {
+            object.drawInfo.uniforms.u_matrix = m4.multiply(viewProjectionMatrix, object.worldMatrix);
+        });
+
+        // ------ Draw the objects --------
+
+        twgl.drawObjectList(gl, objectsToDraw);
+
+        requestAnimationFrame(drawScene);
+    }
 }
 
