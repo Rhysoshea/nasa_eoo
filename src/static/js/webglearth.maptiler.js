@@ -132,28 +132,27 @@ function startup() {
     var solarSystemNode = new Node();
     var earthOrbitNode = new Node();
     // earth orbit 100 units from the sun
-    earthOrbitNode.localMatrix = m4.translation(100, 0, 0);
+    // earthOrbitNode.localMatrix = m4.translation(100, 0, 0);
 
-    var moonOrbitNode = new Node();
-    // moon 20 units from the earth
-    moonOrbitNode.localMatrix = m4.translation(30, 0, 0);
+    var satelliteOrbitNode = new Node();
+    // satellite 20 units from the earth
+    satelliteOrbitNode.localMatrix = m4.translation(10, 0, 0);
 
-    var sunNode = new Node();
-    sunNode.localMatrix = m4.scaling(5, 5, 5); // make the sun 5 times as large
-    sunNode.drawInfo = {
-        uniforms: {
-            u_colorOffset: [0.6, 0.6, 0, 1], // yellow
-            u_colorMult: [0.4, 0.4, 0, 1],
-        },
-        programInfo: programInfo,
-        bufferInfo: sphereBufferInfo,
-        vertexArray: sphereVAO,
-    };
+    // var sunNode = new Node();
+    // sunNode.localMatrix = m4.scaling(5, 5, 5); // make the sun 5 times as large
+    // sunNode.drawInfo = {
+    //     uniforms: {
+    //         u_colorOffset: [0.6, 0.6, 0, 1], // yellow
+    //         u_colorMult: [0.4, 0.4, 0, 1],
+    //     },
+    //     programInfo: programInfo,
+    //     bufferInfo: sphereBufferInfo,
+    //     vertexArray: sphereVAO,
+    // };
 
     var earthNode = new Node();
 
-    // make the earth twice as large
-    earthNode.localMatrix = m4.scaling(2, 2, 2);   // make the earth twice as large
+    earthNode.localMatrix = m4.scaling(5, 5, 5);   // make the earth 5x as large
     earthNode.drawInfo = {
         uniforms: {
             u_colorOffset: [0.2, 0.5, 0.8, 1],  // blue-green
@@ -164,9 +163,9 @@ function startup() {
         vertexArray: sphereVAO,
     };
 
-    var moonNode = new Node();
-    moonNode.localMatrix = m4.scaling(0.4,0.4,0.4);
-    moonNode.drawInfo = {
+    var satelliteNode = new Node();
+    satelliteNode.localMatrix = m4.scaling(0.4,0.4,0.4);
+    satelliteNode.drawInfo = {
         uniforms: {
             u_colorOffset: [0.6, 0.6, 0.6, 1],  // gray
             u_colorMult: [0.1, 0.1, 0.1, 1],
@@ -176,23 +175,21 @@ function startup() {
         vertexArray: sphereVAO,
     };
 
-    // connect the celetial objects
-    sunNode.setParent(solarSystemNode);
-    earthOrbitNode.setParent(solarSystemNode);
-    earthNode.setParent(earthOrbitNode);
-    moonOrbitNode.setParent(earthOrbitNode);
-    moonNode.setParent(moonOrbitNode);
+    // connect the celestial objects
+    // sunNode.setParent(solarSystemNode);
+    // earthOrbitNode.setParent(solarSystemNode);
+    earthNode.setParent(solarSystemNode);
+    satelliteOrbitNode.setParent(earthNode);
+    satelliteNode.setParent(satelliteOrbitNode);
 
     var objects = [
-        sunNode,
         earthNode,
-        moonNode,
+        satelliteNode,
     ];
 
     var objectsToDraw = [
-        sunNode.drawInfo,
         earthNode.drawInfo,
-        moonNode.drawInfo,
+        satelliteNode.drawInfo,
     ];
 
     requestAnimationFrame(drawScene);
@@ -229,15 +226,15 @@ function startup() {
         var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
         // update the local matrices for each object.
-        m4.multiply(m4.yRotation(0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
-        m4.multiply(m4.yRotation(0.01), moonOrbitNode.localMatrix, moonOrbitNode.localMatrix);
+        // m4.multiply(m4.yRotation(0.01), earthOrbitNode.localMatrix, earthOrbitNode.localMatrix);
+        m4.multiply(m4.yRotation(0.01), satelliteOrbitNode.localMatrix, satelliteOrbitNode.localMatrix);
 
-        // spin the sun
-        m4.multiply(m4.yRotation(0.005), sunNode.localMatrix, sunNode.localMatrix);
+        // // spin the sun
+        // m4.multiply(m4.yRotation(0.005), sunNode.localMatrix, sunNode.localMatrix);
         // spin the earth
-        m4.multiply(m4.yRotation(0.05), earthNode.localMatrix, earthNode.localMatrix);
-        // spin the moon
-        m4.multiply(m4.yRotation(-0.01), moonNode.localMatrix, moonNode.localMatrix);
+        m4.multiply(m4.yRotation(0.005), earthNode.localMatrix, earthNode.localMatrix);
+        // spin the satellite
+        m4.multiply(m4.yRotation(-0.01), satelliteNode.localMatrix, satelliteNode.localMatrix);
 
         // Update all world matrices in the scene graph
         solarSystemNode.updateWorldMatrix();
