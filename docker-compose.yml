@@ -2,7 +2,7 @@ version: "3.7"
 services:
     app:
         image: node:12-alpine
-        command: sh -c "yarn install && yarn run dev && git clone https://github.com/webglearth/webglearth2.git && make cesium"
+        command: sh -c "yarn install && yarn run dev && git clone https://github.com/webglearth/webglearth2.git && npm install --save three && make cesium"
         ports:
             - 8000:3000
         working_dir: /nasa_eoo 
