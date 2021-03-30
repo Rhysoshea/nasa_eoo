@@ -1,9 +1,10 @@
 console.clear();
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/controls/OrbitControls.js';
+import {CSS2DRenderer, CSS2DObject } from 'https://threejs.org/examples/jsm/renderers/CSS2DRenderer.js';
 
 var container = document.getElementById('container');
-var renderer, scene, camera, distance, raycaster, projector;
+var renderer, labelRenderer, scene, camera, distance, raycaster, projector;
 distance = 400;
 
 
@@ -25,8 +26,14 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 1);
     renderer.setPixelRatio(devicePixelRatio);
-
     document.body.appendChild( renderer.domElement );
+
+
+    labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    document.body.appendChild(labelRenderer.domElement);
 
     container.appendChild(renderer.domElement);
 
@@ -47,8 +54,16 @@ function init() {
 
     const satellite = new THREE.Sprite();
     satellite.scale.set(0.1, 0.1, 0.1);
-
     satellite.position.set(1,0,1);
+
+    const satelliteDiv = document.createElement( 'div' );
+    satelliteDiv.className = 'label';
+    satelliteDiv.textContent = 'Sat1';
+    satelliteDiv.style.marginTop = '-2em';
+
+    const satelliteLabel = new CSS2DObject( satelliteDiv );
+    satelliteLabel.position.set(0, 0.1, 0);
+    satellite.add(satelliteLabel);
 
     pivotPoint.add(satellite);
     // scene.add(satellite);
@@ -69,13 +84,14 @@ function init() {
     renderer.shadowMap.enabled = true;
 
     // add orbit controls
-    const controls = new OrbitControls( camera, renderer.domElement);
+    const controls = new OrbitControls( camera, labelRenderer.domElement);
 
 
 
     function animate(now) {
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
       render();
     }
 
