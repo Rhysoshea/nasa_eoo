@@ -35,46 +35,57 @@ function init() {
 
     const texture = new THREE.TextureLoader().load("https://raw.githubusercontent.com/josh-street/webgl-earthsatellite/master/earth.jpg");
     const material = new THREE.MeshBasicMaterial( { map: texture } );
-    const earthMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(1, 50, 50), material)
-    earthMesh.position.set(0, 0, 0); 
+    const earth = new THREE.Mesh(new THREE.SphereBufferGeometry(1, 50, 50), material)
+    earth.position.set(0, 0, 0); 
 
-    scene.add( earthMesh );
+    scene.add( earth );
+
+    const pivotPoint = new THREE.Object3D();
+    pivotPoint.position.set(0,0,0);
+    earth.add(pivotPoint);
+
+
+    const satellite = new THREE.Sprite();
+    satellite.scale.set(0.1, 0.1, 0.1);
+
+    satellite.position.set(1,0,1);
+
+    pivotPoint.add(satellite);
+    // scene.add(satellite);
 
     // camera
     camera = new THREE.PerspectiveCamera( 75, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 1000 );
-    // camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 0.2, 25000 );
-    // camera.position.set(100, -400, 2000);
-    // scene.add(camera);
     camera.position.z = 3;
 
     //first point light
     var light = new THREE.PointLight(0xffffff, 1, 4000);
     light.position.set(100, 200, 300);
     light.lookAt( new THREE.Vector3( 100, 0, 0 ) );
-    // scene.add( light );
+    scene.add( light );
 
     var lightAmbient = new THREE.AmbientLight(0xffffff);
     // scene.add( lightAmbient);
+
+    renderer.shadowMap.enabled = true;
 
     // add orbit controls
     const controls = new OrbitControls( camera, renderer.domElement);
 
 
- 
-
 
     function animate(now) {
       requestAnimationFrame(animate);
-
-      earthMesh.rotation.x += 0.0001;
-      earthMesh.rotation.y += 0.0005;
-      controls.update();
+      renderer.render(scene, camera);
       render();
     }
 
     function render(){
-      renderer.render(scene, camera);
+      // earth.rotation.x += 0.0001;
+      earth.rotation.y += 0.0005;
 
+      pivotPoint.rotation.y += 0.005;
+
+      controls.update();
     }
 
     animate(0);
