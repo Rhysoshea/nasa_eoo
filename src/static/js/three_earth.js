@@ -1,5 +1,6 @@
 console.clear();
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
+import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/controls/OrbitControls.js';
 
 var container = document.getElementById('container');
 var renderer, scene, camera, distance, raycaster, projector;
@@ -55,6 +56,9 @@ function init() {
     var lightAmbient = new THREE.AmbientLight(0xffffff);
     // scene.add( lightAmbient);
 
+    // add orbit controls
+    const controls = new OrbitControls( camera, renderer.domElement);
+
 
  
 
@@ -64,7 +68,7 @@ function init() {
 
       earthMesh.rotation.x += 0.0001;
       earthMesh.rotation.y += 0.0005;
-
+      controls.update();
       render();
     }
 
