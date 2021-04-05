@@ -1,17 +1,99 @@
-function App() {
-    const { Container, Row, Col } = ReactBootstrap;
-    return (
-        <Container>
-            <Row>
-                <Col md={{ offset: 3, span: 6 }}>
-                    <TodoListCard />
-                </Col>
-            </Row>
-        </Container>
-    );
+// function App() {
+//     const { Container, Row, Col } = ReactBootstrap;
+//     return (
+//         <Container>
+//             <Row>
+//                 <Col md={{ offset: 3, span: 6 }}>
+//                     <DropdownList />
+//                 </Col>
+//             </Row>
+//         </Container>
+//     );
+// }
+
+// function DropdownList() {
+//     const [items, setItems] = React.useState(null);
+
+//     React.useEffect(() => {
+//         fetch('/items')
+//             .then(r => r.json())
+//             .then(setItems);
+//     }, []);
+
+//     const onItemUpdate = React.useCallback(
+//         item => {
+//             const index = items.findIndex(i => i.id === item.id);
+//             setItems([
+//                 ...items.slice(0, index),
+//                 item,
+//                 ...items.slice(index + 1),
+//             ]);
+//         },
+//         [items],
+//     );
+
+//     if (items === null) return 'Loading...';
+
+//     return (
+//         <React.Fragment>
+//             {/* <AddItemForm onNewItem={onNewItem} /> */}
+//             {items.length === 0 && (
+//                 <p className="text-center">No satellites in database</p>
+//             )}
+//             {items.map(item => (
+//                 <ItemDisplay
+//                     item={item}
+//                     key={item.id}
+//                 />
+//             ))}
+//         </React.Fragment>
+//     );
+// }
+
+// function ItemDisplay({ item }) {
+//     const { Container, Row, Col, Button } = ReactBootstrap;
+
+
+//     // const removeItem = () => {
+//     //     fetch(`/items/${item.id}`, { method: 'DELETE' }).then(() =>
+//     //         onItemRemoval(item),
+//     //     );
+//     // };
+
+//     return (
+//         // <DropdownButton id="dropdown-basic-button" title="Satellite List">
+//         //     <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
+//         //     <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
+//         //     <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>        
+//         // </DropdownButton>
+//         <Dropdown>
+//             <Dropdown.Toggle variant="success" id="dropdown-basic">
+//                 Dropdown Button
+//   </Dropdown.Toggle>
+
+//             <Dropdown.Menu>
+//                 <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
+//                 <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
+//                 <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
+//             </Dropdown.Menu>
+//         </Dropdown>
+//     );
+// }
+
+
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+        render () {
+            return (
+                <DropdownList />
+            );
+        }
 }
 
-function TodoListCard() {
+
+function DropdownList() {
     const [items, setItems] = React.useState(null);
 
     React.useEffect(() => {
@@ -20,162 +102,62 @@ function TodoListCard() {
             .then(setItems);
     }, []);
 
-    const onNewItem = React.useCallback(
-        newItem => {
-            setItems([...items, newItem]);
-        },
-        [items],
-    );
-
-    const onItemUpdate = React.useCallback(
-        item => {
-            const index = items.findIndex(i => i.id === item.id);
-            setItems([
-                ...items.slice(0, index),
-                item,
-                ...items.slice(index + 1),
-            ]);
-        },
-        [items],
-    );
-
-    const onItemRemoval = React.useCallback(
-        item => {
-            const index = items.findIndex(i => i.id === item.id);
-            setItems([...items.slice(0, index), ...items.slice(index + 1)]);
-        },
-        [items],
-    );
-
     if (items === null) return 'Loading...';
-    console.log(items);
 
+    let optionItems = items.map((item) =>
+        <option key={item} selected>{item.name}</option>
+    );
+    // console.log(optionItems)
     return (
-        <React.Fragment>
-            <AddItemForm onNewItem={onNewItem} />
-            {items.length === 0 && (
-                <p className="text-center">You have no todo items yet! Add one above!</p>
-            )}
-            {items.map(item => (
-                <ItemDisplay
-                    item={item}
-                    key={item.id}
-                    onItemUpdate={onItemUpdate}
-                    onItemRemoval={onItemRemoval}
-                />
-            ))}
-        </React.Fragment>
+        <ItemDisplay items={optionItems} />
+ 
     );
 }
 
-function AddItemForm({ onNewItem }) {
-    const { Form, InputGroup, Button } = ReactBootstrap;
+class ItemDisplay extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {value: ''};
 
-    const [newItem, setNewItem] = React.useState('');
-    const [submitting, setSubmitting] = React.useState(false);
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
 
-    const submitNewItem = e => {
-        e.preventDefault();
-        setSubmitting(true);
-        fetch('/items', {
-            method: 'POST',
-            body: JSON.stringify({ name: newItem }),
-            headers: { 'Content-Type': 'application/json' },
-        })
-            .then(r => r.json())
-            .then(item => {
-                onNewItem(item);
-                setSubmitting(false);
-                setNewItem('');
-            });
-    };
+    handleChange(event) {
+        this.setState({value: event.target.value});
+    }
 
-    return (
-        <Form onSubmit={submitNewItem}>
-            <InputGroup className="mb-3">
-                <Form.Control
-                    value={newItem}
-                    onChange={e => setNewItem(e.target.value)}
-                    type="text"
-                    placeholder="New Item"
-                    aria-describedby="basic-addon1"
-                />
-                <InputGroup.Append>
-                    <Button
-                        type="submit"
-                        variant="success"
-                        disabled={!newItem.length}
-                        className={submitting ? 'disabled' : ''}
-                    >
-                        {submitting ? 'Adding...' : 'Add Item'}
-                    </Button>
-                </InputGroup.Append>
-            </InputGroup>
-        </Form>
-    );
-}
+    handleSubmit(event){
+        alert("Searching for satellite: " + this.state.value);
+        event.preventDefault();
+    }
 
-function ItemDisplay({ item, onItemUpdate, onItemRemoval }) {
-    const { Container, Row, Col, Button } = ReactBootstrap;
+    
+    render() {
 
-    const toggleCompletion = () => {
-        fetch(`/items/${item.id}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-                name: item.name,
-                completed: !item.completed,
-            }),
-            headers: { 'Content-Type': 'application/json' },
-        })
-            .then(r => r.json())
-            .then(onItemUpdate);
-    };
+        return (
 
-    const removeItem = () => {
-        fetch(`/items/${item.id}`, { method: 'DELETE' }).then(() =>
-            onItemRemoval(item),
+            <div>
+                <div id="instructions">
+                    <h1>Instructions:</h1>
+                    <p style={{ color: "white" }}>Select a satellite from the dropdown list</p>
+                </div>
+
+                <form onSubmit={this.handleSubmit}>
+                    <div>
+                        <select id="sat_dropdown" value={this.state.value} onChange={this.handleChange}>
+                            <option value="hide">-- Satellites --</option>
+
+                            {this.props.items}
+                        </select>
+                        <input type="submit" value="Show"/>
+                    </div>
+                </form>
+
+            </div>
         );
-    };
+    }
 
-    return (
-        <Container fluid className={`item ${item.completed && 'completed'}`}>
-            <Row>
-                <Col xs={1} className="text-center">
-                    <Button
-                        className="toggles"
-                        size="sm"
-                        variant="link"
-                        onClick={toggleCompletion}
-                        aria-label={
-                            item.completed
-                                ? 'Mark item as incomplete'
-                                : 'Mark item as complete'
-                        }
-                    >
-                        <i
-                            onClick={toggleCompletion}
-                            className={`far ${
-                                item.completed ? 'fa-check-square' : 'fa-square'
-                            }`}
-                        />
-                    </Button>
-                </Col>
-                <Col xs={10} className="name">
-                    {item.name}
-                </Col>
-                <Col xs={1} className="text-center remove">
-                    <Button
-                        size="sm"
-                        variant="link"
-                        onClick={removeItem}
-                        aria-label="Remove Item"
-                    >
-                        <i className="fa fa-trash text-danger" />
-                    </Button>
-                </Col>
-            </Row>
-        </Container>
-    );
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
