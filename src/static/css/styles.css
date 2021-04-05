@@ -89,7 +89,16 @@ button:focus {
     width:24%;
     height:12em;
     border-radius: 5px;
+    position: absolute;
+}
 
+form {
+  position: absolute;
+  z-index: 1;
+}
+
+#container {
+  z-index: 99;
 }
 
 .select-hidden {
