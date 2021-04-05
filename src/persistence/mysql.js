@@ -33,7 +33,22 @@ async function init() {
 
     return new Promise((acc, rej) => {
         pool.query(
-            'CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean)',
+            `CREATE TABLE IF NOT EXISTS latest_data 
+            (name varchar(36), 
+            sat_num varchar(255), 
+            international_des varchar(36), 
+            epoch int, 
+            ballistic float, 
+            drag_term float, 
+            inclination float, 
+            ascending_node float, 
+            eccentricity float, 
+            perigree float, 
+            anomaly float, 
+            motion float, 
+            rev_num float, 
+            description varchar(255))
+            `,
             err => {
                 if (err) return rej(err);
 
@@ -43,6 +58,7 @@ async function init() {
         );
     });
 }
+
 
 async function teardown() {
     return new Promise((acc, rej) => {
