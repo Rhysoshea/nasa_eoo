@@ -143,16 +143,18 @@ class ItemDisplay extends React.Component {
                     <p style={{ color: "white" }}>Select a satellite from the dropdown list</p>
                 </div>
 
-                <form onSubmit={this.handleSubmit}>
-                    <div>
-                        <select id="sat_dropdown" value={this.state.value} onChange={this.handleChange}>
-                            <option value="hide">-- Satellites --</option>
+                <div id="sat_list_div">
+                    <form onSubmit={this.handleSubmit}>
+                        <div>
+                            <select id="sat_dropdown" value={this.state.value} onChange={this.handleChange}>
+                                <option value="hide">-- Satellites --</option>
 
-                            {this.props.items}
-                        </select>
-                        <input type="submit" value="Show"/>
-                    </div>
-                </form>
+                                {this.props.items}
+                            </select>
+                            <input type="submit" value="Select Satellite"/>
+                        </div>
+                    </form>
+                </div>
 
             </div>
         );
