@@ -81,6 +81,7 @@
 // }
 
 
+
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -95,6 +96,7 @@ class App extends React.Component {
 
 function DropdownList() {
     const [items, setItems] = React.useState(null);
+    // useInfoDisplay(); //this successfully calls function
 
     React.useEffect(() => {
         fetch('/items')
@@ -117,20 +119,55 @@ function DropdownList() {
 class ItemDisplay extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {value: ''};
+        this.state = {name: ''};
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
+    useInfoDisplay() {
+        // const [items, setItems] = React.useState(null);
+    
+        // React.useEffect(() => {
+        //     fetch('/items')
+        //         .then(r => r.json())
+        //         .then(setItems);
+        // }, []);
+    
+        // const removeItem = () => {
+        //     fetch(`/items/${item.id}`, { method: 'DELETE' }).then(() =>
+        //         onItemRemoval(item),
+        //         );
+        //     };
+        let itemParameters = [];
+        // let itemParameters = items.map((item) =>
+        //     <option key={item} selected>{item.name}</option>
+        // );
+        console.log("hello world");
+        console.log(itemParameters);
+        return (
+            <ParameterDisplay items={itemParameters} />
+     
+        );
+    }
+
     handleChange(event) {
-        this.setState({value: event.target.value});
+        this.setState({name: event.target.value});
     }
 
     handleSubmit(event){
-        alert("Searching for satellite: " + this.state.value);
-        event.preventDefault();
+        alert("Searching for satellite: " + this.state.name);
+        event.preventDefault(); // prevents page from refreshing
+
+        this.useInfoDisplay(); //this does not successfully call function
+
+        // return (
+
+        //     <InfoDisplay/>
+        // )
+
     }
+
 
     
     render() {
@@ -159,7 +196,70 @@ class ItemDisplay extends React.Component {
             </div>
         );
     }
+}
 
+// function useInfoDisplay() {
+//     const [items, setItems] = React.useState(null);
+
+//     // React.useEffect(() => {
+//     //     fetch('/items')
+//     //         .then(r => r.json())
+//     //         .then(setItems);
+//     // }, []);
+
+//     // const removeItem = () => {
+//     //     fetch(`/items/${item.id}`, { method: 'DELETE' }).then(() =>
+//     //         onItemRemoval(item),
+//     //         );
+//     //     };
+//     let itemParameters = [];
+//     // let itemParameters = items.map((item) =>
+//     //     <option key={item} selected>{item.name}</option>
+//     // );
+//     console.log("hello world");
+//     console.log(itemParameters);
+//     return (
+//         <ParameterDisplay items={itemParameters} />
+ 
+//     );
+// }
+
+
+class ParameterDisplay extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {name: '', 
+                    sat_num:'', 
+                    international_des:'', 
+                    epoch:'', 
+                    ballistic:'', 
+                    drag_term:'', 
+                    inclination:'', 
+                    ascending_node:'', 
+                    eccentricity:'', 
+                    perigree:'', 
+                    anomaly:'', 
+                    motion:'', 
+                    rev_num:'', 
+                    description:''};
+    }
+    
+    render() {
+
+        return (
+
+            <div id="parameters">
+                {/* <dl> */}
+                <ul>
+                    <h1>HELLO WORLD</h1>
+                    {this.props.items}
+
+                </ul>
+                {/* </dl> */}
+            </div>
+
+        );
+    }
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
