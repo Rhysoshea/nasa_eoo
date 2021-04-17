@@ -84,7 +84,7 @@ async function getNames() {
 
 async function getItems() {
     return new Promise((acc, rej) => {
-        pool.query('SELECT DISTINCT name FROM latest_data', (err, rows) => {
+        pool.query('SELECT * FROM latest_data', (err, rows) => {
             if (err) return rej(err);
             acc(
                 rows.map(item =>
@@ -101,10 +101,8 @@ async function getItem(name) {
             if (err) return rej(err);
             acc(
                 rows.map(item =>
-                    Object.assign({}, item, {
-                        completed: item.completed === 1,
-                    }),
-                )[0],
+                    Object.assign({}, item),
+                ),
             );
         });
     });
