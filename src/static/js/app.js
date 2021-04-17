@@ -1,87 +1,3 @@
-// function App() {
-//     const { Container, Row, Col } = ReactBootstrap;
-//     return (
-//         <Container>
-//             <Row>
-//                 <Col md={{ offset: 3, span: 6 }}>
-//                     <DropdownList />
-//                 </Col>
-//             </Row>
-//         </Container>
-//     );
-// }
-
-// function DropdownList() {
-//     const [items, setItems] = React.useState(null);
-
-//     React.useEffect(() => {
-//         fetch('/items')
-//             .then(r => r.json())
-//             .then(setItems);
-//     }, []);
-
-//     const onItemUpdate = React.useCallback(
-//         item => {
-//             const index = items.findIndex(i => i.id === item.id);
-//             setItems([
-//                 ...items.slice(0, index),
-//                 item,
-//                 ...items.slice(index + 1),
-//             ]);
-//         },
-//         [items],
-//     );
-
-//     if (items === null) return 'Loading...';
-
-//     return (
-//         <React.Fragment>
-//             {/* <AddItemForm onNewItem={onNewItem} /> */}
-//             {items.length === 0 && (
-//                 <p className="text-center">No satellites in database</p>
-//             )}
-//             {items.map(item => (
-//                 <ItemDisplay
-//                     item={item}
-//                     key={item.id}
-//                 />
-//             ))}
-//         </React.Fragment>
-//     );
-// }
-
-// function ItemDisplay({ item }) {
-//     const { Container, Row, Col, Button } = ReactBootstrap;
-
-
-//     // const removeItem = () => {
-//     //     fetch(`/items/${item.id}`, { method: 'DELETE' }).then(() =>
-//     //         onItemRemoval(item),
-//     //     );
-//     // };
-
-//     return (
-//         // <DropdownButton id="dropdown-basic-button" title="Satellite List">
-//         //     <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-//         //     <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-//         //     <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>        
-//         // </DropdownButton>
-//         <Dropdown>
-//             <Dropdown.Toggle variant="success" id="dropdown-basic">
-//                 Dropdown Button
-//   </Dropdown.Toggle>
-
-//             <Dropdown.Menu>
-//                 <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-//                 <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-//                 <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-//             </Dropdown.Menu>
-//         </Dropdown>
-//     );
-// }
-
-
-
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -89,6 +5,7 @@ class App extends React.Component {
         render () {
             return (
                 <DropdownList />
+                // <InfoDisplay />
             );
         }
 }
@@ -96,7 +13,15 @@ class App extends React.Component {
 
 function DropdownList() {
     const [items, setItems] = React.useState(null);
-    // useInfoDisplay(); //this successfully calls function
+    const [names, setNames] = React.useState(null);
+    const [itemInfo, setItemInfo] = React.useState("");
+    const {Container} = ReactBootstrap;
+
+    React.useEffect(() => {
+        fetch('/names')
+            .then(r => r.json())
+            .then(setNames);
+    }, []);
 
     React.useEffect(() => {
         fetch('/items')
@@ -104,14 +29,37 @@ function DropdownList() {
             .then(setItems);
     }, []);
 
+    function getKeyByValue(object, value) {
+        return Object.keys(object).find(key => object[key].name === value);
+      }
+      
+    
+    function searchItemInfo (searchName) {
+        setItemInfo(Object.values(items[getKeyByValue(items,searchName)]));
+
+        console.log(itemInfo);
+        return itemInfo;
+        
+    };
+
+
+
     if (items === null) return 'Loading...';
 
-    let optionItems = items.map((item) =>
+    let optionItems = names.map((item) =>
         <option key={item} selected>{item.name}</option>
     );
-    // console.log(optionItems)
+
     return (
-        <ItemDisplay items={optionItems} />
+        <Container> 
+            <ItemDisplay 
+                names={optionItems}
+                items={items}
+                onSearchInfo={searchItemInfo} 
+            />
+
+        </Container>
+        
  
     );
 }
@@ -119,36 +67,22 @@ function DropdownList() {
 class ItemDisplay extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {name: ''};
+        this.state = {name: '',
+                      parameters: {
+                      }};
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    useInfoDisplay() {
-        // const [items, setItems] = React.useState(null);
-    
-        // React.useEffect(() => {
-        //     fetch('/items')
-        //         .then(r => r.json())
-        //         .then(setItems);
-        // }, []);
-    
-        // const removeItem = () => {
-        //     fetch(`/items/${item.id}`, { method: 'DELETE' }).then(() =>
-        //         onItemRemoval(item),
-        //         );
-        //     };
-        let itemParameters = [];
-        // let itemParameters = items.map((item) =>
-        //     <option key={item} selected>{item.name}</option>
-        // );
-        console.log("hello world");
-        console.log(itemParameters);
-        return (
-            <ParameterDisplay items={itemParameters} />
-     
-        );
+
+    getKeyByValue(object, value) {
+        return Object.keys(object).find(key => object[key].name === value);
+      }
+
+    searchItemInfo (searchName) {
+        var params = Object.values(this.props.items[this.getKeyByValue(this.props.items,searchName)]);
+        this.setState({parameters: params});  
     }
 
     handleChange(event) {
@@ -159,18 +93,35 @@ class ItemDisplay extends React.Component {
         alert("Searching for satellite: " + this.state.name);
         event.preventDefault(); // prevents page from refreshing
 
-        this.useInfoDisplay(); //this does not successfully call function
-
-        // return (
-
-        //     <InfoDisplay/>
-        // )
-
+        this.searchItemInfo(this.state.name);
     }
+
 
 
     
     render() {
+
+        let paramKeys = ["Satellite name", 
+        "Satellite number", 
+        "International designation", 
+        "Epoch", 
+        "Ballistic", 
+        "Drag term", 
+        "Inclination", 
+        "Ascending node", 
+        "Eccentricity", 
+        "Perigree", 
+        "Anomaly", 
+        "Motion", 
+        "Revolution number", 
+        "Description"]
+
+        var tbody = document.getElementById('infoTable');
+        for (var i = 0; i < Object.entries(this.state.parameters).length; i++) {
+            var tr = "<tr>";
+            tr += "<td>" + paramKeys[i] + "</td>" + "<td>" + Object.entries(this.state.parameters)[i][1] + "</td></tr>";
+            tbody.innerHTML += tr;
+        }
 
         return (
 
@@ -186,80 +137,21 @@ class ItemDisplay extends React.Component {
                             <select id="sat_dropdown" value={this.state.value} onChange={this.handleChange}>
                                 <option value="hide">-- Satellites --</option>
 
-                                {this.props.items}
+                                {this.props.names}
                             </select>
                             <input type="submit" value="Select Satellite"/>
                         </div>
                     </form>
                 </div>
 
+                <div id="parameters">
+                </div>  
             </div>
+
+
         );
     }
 }
 
-// function useInfoDisplay() {
-//     const [items, setItems] = React.useState(null);
-
-//     // React.useEffect(() => {
-//     //     fetch('/items')
-//     //         .then(r => r.json())
-//     //         .then(setItems);
-//     // }, []);
-
-//     // const removeItem = () => {
-//     //     fetch(`/items/${item.id}`, { method: 'DELETE' }).then(() =>
-//     //         onItemRemoval(item),
-//     //         );
-//     //     };
-//     let itemParameters = [];
-//     // let itemParameters = items.map((item) =>
-//     //     <option key={item} selected>{item.name}</option>
-//     // );
-//     console.log("hello world");
-//     console.log(itemParameters);
-//     return (
-//         <ParameterDisplay items={itemParameters} />
- 
-//     );
-// }
-
-
-class ParameterDisplay extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {name: '', 
-                    sat_num:'', 
-                    international_des:'', 
-                    epoch:'', 
-                    ballistic:'', 
-                    drag_term:'', 
-                    inclination:'', 
-                    ascending_node:'', 
-                    eccentricity:'', 
-                    perigree:'', 
-                    anomaly:'', 
-                    motion:'', 
-                    rev_num:'', 
-                    description:''};
-    }
-    
-    render() {
-
-        return (
-
-            <div id="parameters">
-                {/* <dl> */}
-                <ul>
-                    <h1>HELLO WORLD</h1>
-                    {this.props.items}
-
-                </ul>
-                {/* </dl> */}
-            </div>
-
-        );
-    }
-}
 
 ReactDOM.render(<App />, document.getElementById('root'));
