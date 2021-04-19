@@ -3,20 +3,32 @@ import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/controls/OrbitControls.js';
 import {CSS2DRenderer, CSS2DObject } from 'https://threejs.org/examples/jsm/renderers/CSS2DRenderer.js';
 
-var container = document.getElementById('container');
-var renderer, labelRenderer, scene, camera, distance, raycaster, projector;
-distance = 400;
-
-
-// const settings = {
-//     animate: true,
-//     context: "webgl",
-//     scaleToView: true
-//   };
-  
-
 var SCREEN_WIDTH = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
+var container, renderer, labelRenderer, scene, camera, parameters;
+var satName = 'Sat';
+
+window.addEventListener("load", function() {
+  container = document.getElementById('container');
+  const tableElement = document.querySelector("#sat_list_div > form > div > input[type=submit]")
+  // const satNameElement = document.querySelector("#infoTable > tr:nth-child(1) > td:nth-child(2)");
+  
+  console.log(tableElement);
+
+  tableElement.addEventListener("click", updateVal);
+  
+  init();
+});
+
+
+function updateVal(){
+  satName = document.querySelector("#infoTable > tr:nth-child(1) > td:nth-child(2)").innerText;
+
+  console.log(satName);
+}
+
+
+
 
 
 
@@ -58,7 +70,7 @@ function init() {
 
     const satelliteDiv = document.createElement( 'div' );
     satelliteDiv.className = 'label';
-    satelliteDiv.textContent = 'Sat1';
+    satelliteDiv.textContent = satName;
     satelliteDiv.style.marginTop = '-2em';
 
     const satelliteLabel = new CSS2DObject( satelliteDiv );
@@ -87,7 +99,6 @@ function init() {
     const controls = new OrbitControls( camera, labelRenderer.domElement);
 
 
-
     function animate(now) {
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
@@ -96,15 +107,13 @@ function init() {
     }
 
     function render(){
-      // earth.rotation.x += 0.0001;
+
+     // earth.rotation.x += 0.0001;
       earth.rotation.y += 0.0005;
-
       pivotPoint.rotation.y += 0.005;
-
       controls.update();
     }
 
     animate(0);
 }
 
-init()
