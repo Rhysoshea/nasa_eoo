@@ -68,7 +68,21 @@ class ItemDisplay extends React.Component {
     constructor(props) {
         super(props);
         this.state = {name: '',
-                      parameters: {
+                      parameters: { 
+                      "Satellite name":"None", 
+                      "Satellite number":"None", 
+                      "International designation":"None", 
+                      "Epoch":"None", 
+                      "Ballistic":"None", 
+                      "Drag term":"None", 
+                      "Inclination":"None", 
+                      "Ascending node":"None", 
+                      "Eccentricity":"None", 
+                      "Perigree":"None", 
+                      "Anomaly":"None", 
+                      "Motion":"None", 
+                      "Revolution number":"None", 
+                      "Description":"None"
                       }};
 
         this.handleChange = this.handleChange.bind(this);
@@ -101,7 +115,8 @@ class ItemDisplay extends React.Component {
     
     render() {
 
-        let paramKeys = ["Satellite name", 
+        let paramKeys = [
+        "Satellite name", 
         "Satellite number", 
         "International designation", 
         "Epoch", 
@@ -117,6 +132,7 @@ class ItemDisplay extends React.Component {
         "Description"]
 
         var tbody = document.getElementById('infoTable');
+        tbody.innerHTML = "";
         for (var i = 0; i < Object.entries(this.state.parameters).length; i++) {
             var tr = "<tr>";
             tr += "<td>" + paramKeys[i] + "</td>" + "<td>" + Object.entries(this.state.parameters)[i][1] + "</td></tr>";
