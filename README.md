@@ -1,6 +1,9 @@
 ## Purpose of Repository:
 Visualise Earth-orbiting objects from NASA TLE (Two Line Element) data
 
+![Gif not working right now](https://github.com/Rhysoshea/nasa_eoo/blob/master/assets/demo.gif)
+
+
 
 ## Functionality
 - downloadable Docker container to run on local host
