@@ -101,13 +101,15 @@ class ItemDisplay extends React.Component {
 
     handleChange(event) {
         this.setState({name: event.target.value});
+        this.searchItemInfo(event.target.value);
+
     }
 
     handleSubmit(event){
-        alert("Searching for satellite: " + this.state.name);
+        // alert("Searching for satellite: " + this.state.name);
         event.preventDefault(); // prevents page from refreshing
 
-        this.searchItemInfo(this.state.name);
+        // this.searchItemInfo(this.state.name);
     }
 
 
