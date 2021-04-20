@@ -1,4 +1,3 @@
-console.clear();
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/controls/OrbitControls.js';
 import {CSS2DRenderer, CSS2DObject } from 'https://threejs.org/examples/jsm/renderers/CSS2DRenderer.js';
@@ -8,23 +7,27 @@ var SCREEN_HEIGHT = window.innerHeight;
 var container, renderer, labelRenderer, scene, camera, parameters;
 var satName = 'Sat';
 
-window.addEventListener("load", function() {
-  container = document.getElementById('container');
-  const tableElement = document.querySelector("#sat_list_div > form > div > input[type=submit]")
-  // const satNameElement = document.querySelector("#infoTable > tr:nth-child(1) > td:nth-child(2)");
-  
-  console.log(tableElement);
+// temporary measure to allow table to update after button click
+// while event listener is not working on table contents
+function sleep(milliseconds) {
+  const date = Date.now();
+  let currentDate = null;
+  do {
+    currentDate = Date.now();
+  } while (currentDate - date < milliseconds);
+}
 
-  tableElement.addEventListener("click", updateVal);
-  
-  init();
-});
+function pollDOM() {
+  const satNameElement = document.querySelector("#infoTable > tr:nth-child(1) > td:nth-child(2)");
 
+  if (satNameElement != null) {
 
-function updateVal(){
-  satName = document.querySelector("#infoTable > tr:nth-child(1) > td:nth-child(2)").innerText;
+    container = document.getElementById('container');
+    init();
 
-  console.log(satName);
+  } else {
+    setTimeout(pollDOM, 300); // try again in 300 milliseconds
+  }
 }
 
 
@@ -32,7 +35,16 @@ function updateVal(){
 
 
 
+
+
+
 function init() {
+    console.clear();
+    const button = document.querySelector("#sat_list_div > form > div > input[type=submit]")
+    button.addEventListener("click", updateVal);
+
+    // const cell = document.querySelector("body > table");
+    // cell.addEventListener("change", updateVal);
 
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -52,9 +64,9 @@ function init() {
 
     scene = new THREE.Scene();
 
-    const texture = new THREE.TextureLoader().load("https://raw.githubusercontent.com/josh-street/webgl-earthsatellite/master/earth.jpg");
-    const material = new THREE.MeshBasicMaterial( { map: texture } );
-    const earth = new THREE.Mesh(new THREE.SphereBufferGeometry(1, 50, 50), material)
+    const textureEarth = new THREE.TextureLoader().load("https://raw.githubusercontent.com/josh-street/webgl-earthsatellite/master/earth.jpg");
+    const materialEarth = new THREE.MeshBasicMaterial( { map: textureEarth } );
+    const earth = new THREE.Mesh(new THREE.SphereBufferGeometry(1, 50, 50), materialEarth)
     earth.position.set(0, 0, 0); 
 
     scene.add( earth );
@@ -63,9 +75,10 @@ function init() {
     pivotPoint.position.set(0,0,0);
     earth.add(pivotPoint);
 
-
-    const satellite = new THREE.Sprite();
-    satellite.scale.set(0.1, 0.1, 0.1);
+    const textureSat = new THREE.TextureLoader().load("https://raw.githubusercontent.com/Rhysoshea/nasa_eoo/master/assets/sat_sprite.png");
+    const materialSat = new THREE.SpriteMaterial( { map: textureSat, alphaTest:0.5 } );
+    const satellite = new THREE.Sprite(materialSat);
+    satellite.scale.set(0.3, 0.3, 0.3);
     satellite.position.set(1,0,1);
 
     const satelliteDiv = document.createElement( 'div' );
@@ -114,6 +127,16 @@ function init() {
       controls.update();
     }
 
+    function updateVal(){
+      satelliteDiv.textContent = document.querySelector("#infoTable > tr:nth-child(1) > td:nth-child(2)").innerText;
+      // satelliteDiv.textContent = document.querySelector("#infoTable > tr:nth-child(1) > td:nth-child(2)").innerText;
+      // satelliteDiv.textContent = document.querySelector("#infoTable > tr:nth-child(1) > td:nth-child(2)").innerText;
+      // satelliteDiv.textContent = document.querySelector("#infoTable > tr:nth-child(1) > td:nth-child(2)").innerText;
+
+    }
+
     animate(0);
 }
 
+
+pollDOM();
